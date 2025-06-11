@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """Create sample PDF files with proper Japanese font support"""
 
-import fitz  # PyMuPDF
 from pathlib import Path
-import subprocess
-import sys
+
+import fitz  # PyMuPDF
 
 
 def check_system_fonts():
     """Check available Japanese fonts on the system"""
     print("Checking available Japanese fonts...")
-    
+
     # Common Japanese font paths on macOS
     font_paths = [
         "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
@@ -18,23 +17,23 @@ def check_system_fonts():
         "/Library/Fonts/Arial Unicode.ttf",
         "/System/Library/Fonts/Helvetica.ttc"
     ]
-    
+
     available_fonts = []
     for font_path in font_paths:
         if Path(font_path).exists():
             available_fonts.append(font_path)
             print(f"  ✓ Found: {font_path}")
-    
+
     return available_fonts
 
 
 def create_text_only_japanese_pdf(output_path: Path) -> None:
     """Create a simple text-only Japanese PDF without embedded fonts"""
     doc = fitz.open()
-    
+
     # Page 1: Title page
     page1 = doc.new_page()
-    
+
     # Add text content that will be extracted (font rendering is handled by PDF viewer)
     text_content = """PDF自動翻訳システム
 Automatic PDF Translation System
@@ -49,7 +48,7 @@ Automatic PDF Translation System
 • レイアウト保持機能
 • 専門用語の自動抽出
 • 日英・英日翻訳対応"""
-    
+
     # Insert as text block
     page1.insert_textbox(
         fitz.Rect(50, 50, 500, 700),
@@ -57,10 +56,10 @@ Automatic PDF Translation System
         fontsize=12,
         align=0
     )
-    
+
     # Page 2: Technical content
     page2 = doc.new_page()
-    
+
     text_content2 = """1. システム概要
 
 本システムはPyMuPDF、PaddleOCR、Ollamaを使用してPDFファイルの
@@ -82,17 +81,17 @@ Automatic PDF Translation System
 4. ページ単位での翻訳処理
 5. 用語注釈の付与
 6. 最終出力の生成"""
-    
+
     page2.insert_textbox(
         fitz.Rect(50, 50, 500, 700),
         text_content2,
         fontsize=11,
         align=0
     )
-    
+
     # Page 3: Technical terms
     page3 = doc.new_page()
-    
+
     text_content3 = """2. 技術用語・アルゴリズム
 
 以下の技術用語が文書に含まれています：
@@ -125,31 +124,31 @@ Automatic PDF Translation System
    
 6. 最終レンダリング
    - HTML/Markdown形式での出力"""
-    
+
     page3.insert_textbox(
         fitz.Rect(50, 50, 500, 700),
         text_content3,
         fontsize=11,
         align=0
     )
-    
+
     doc.save(output_path)
     doc.close()
-    
+
     print(f"Text-based Japanese PDF created: {output_path}")
 
 
 def create_mixed_content_pdf(output_path: Path) -> None:
     """Create a PDF with mixed Japanese and English content"""
     doc = fitz.open()
-    
+
     # Create pages with mixed content
     page1 = doc.new_page()
-    
+
     # Title section
     page1.insert_text((50, 80), "PDF Translation System", fontsize=20)
     page1.insert_text((50, 110), "Technical Specification Document", fontsize=14)
-    
+
     # Mixed content
     mixed_text = """[System Overview / システム概要]
 
@@ -170,17 +169,17 @@ Supported Technologies / 使用技術:
 - PaddleOCR: Optical character recognition / 光学文字認識
 - Ollama/OpenAI: Translation engine / 翻訳エンジン
 - spaCy: NLP processing / 自然言語処理"""
-    
+
     page1.insert_textbox(
         fitz.Rect(50, 140, 500, 700),
         mixed_text,
         fontsize=11,
         align=0
     )
-    
+
     doc.save(output_path)
     doc.close()
-    
+
     print(f"Mixed content PDF created: {output_path}")
 
 
@@ -188,34 +187,34 @@ def main():
     """Create various sample PDF files"""
     # Check system fonts
     available_fonts = check_system_fonts()
-    
+
     if not available_fonts:
         print("\n⚠️  Warning: No Japanese fonts found in standard locations")
         print("The PDFs will be created with text content, but Japanese characters")
         print("may not display correctly depending on your PDF viewer.\n")
-    
+
     # Create output directory
     samples_dir = Path("tests/fixtures")
     samples_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Create text-based Japanese PDF
     japanese_pdf = samples_dir / "sample_japanese_text.pdf"
     create_text_only_japanese_pdf(japanese_pdf)
-    
+
     # Create mixed content PDF
     mixed_pdf = samples_dir / "sample_mixed_content.pdf"
     create_mixed_content_pdf(mixed_pdf)
-    
+
     # Keep the English PDF creation
     from create_sample_pdf import create_english_sample_pdf
     english_pdf = samples_dir / "sample_english.pdf"
     create_english_sample_pdf(english_pdf)
-    
+
     print(f"\nSample files created in: {samples_dir}")
     print("Files created:")
     for pdf_file in samples_dir.glob("*.pdf"):
         print(f"  - {pdf_file.name}")
-    
+
     print("\nNote: Japanese text extraction will work correctly even if")
     print("the characters don't display properly in your PDF viewer.")
 

@@ -1,9 +1,10 @@
 """Tests for PDF extractor module."""
 
-import pytest
 from pathlib import Path
 
-from src.extractor import PDFExtractor, PageInfo, TextBlock
+import pytest
+
+from src.extractor import PageInfo, PDFExtractor, TextBlock
 
 
 class TestPDFExtractor:

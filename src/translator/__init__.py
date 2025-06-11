@@ -1,11 +1,11 @@
 """Translator module for PDF translation"""
 from .translator import (
-    TranslatorConfig,
     BaseTranslator,
     OllamaTranslator,
     OpenAITranslator,
+    TranslationResult,
+    TranslatorConfig,
     TranslatorFactory,
-    TranslationResult
 )
 
 __all__ = [

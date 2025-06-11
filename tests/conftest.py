@@ -1,10 +1,11 @@
 """Pytest configuration and fixtures"""
 
-import pytest
 import tempfile
-import fitz  # PyMuPDF
 from pathlib import Path
 from typing import Generator
+
+import fitz  # PyMuPDF
+import pytest
 
 
 @pytest.fixture

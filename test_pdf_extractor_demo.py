@@ -2,13 +2,14 @@
 """Demo script to test PDF extractor with a sample document"""
 
 import tempfile
-import fitz  # PyMuPDF
 from pathlib import Path
-from src.extractor import PDFExtractor
+
+import fitz  # PyMuPDF
 from rich.console import Console
-from rich.table import Table
 from rich.panel import Panel
-import json
+from rich.table import Table
+
+from src.extractor import PDFExtractor
 
 
 def create_sample_pdf() -> Path:

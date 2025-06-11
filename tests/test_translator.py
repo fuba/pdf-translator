@@ -1,16 +1,14 @@
 """Tests for translator module"""
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
-import json
 
 from src.translator import (
-    TranslatorConfig,
-    BaseTranslator,
     OllamaTranslator,
     OpenAITranslator,
+    TranslationResult,
+    TranslatorConfig,
     TranslatorFactory,
-    TranslationResult
 )
 
 
@@ -25,17 +23,17 @@ class TestTranslatorConfig:
             "max_tokens": 4096
         }
         config = TranslatorConfig.from_dict(config_dict)
-        
+
         assert config.engine == "ollama"
         assert config.model == "gemma3:12b"
         assert config.base_url == "http://localhost:11434/api"
         assert config.temperature == 0.3
         assert config.max_tokens == 4096
-    
+
     def test_default_values(self):
         """Test default configuration values"""
         config = TranslatorConfig()
-        
+
         assert config.engine == "ollama"
         assert config.model == "gemma3:12b"
         assert config.temperature == 0.3
@@ -47,27 +45,27 @@ class TestBaseTranslator:
         config = TranslatorConfig()
         # Use OllamaTranslator to test BaseTranslator methods
         translator = OllamaTranslator(config)
-        
+
         prompt = translator.get_system_prompt(
             source_lang="en",
             target_lang="ja",
             preserve_format=True
         )
-        
+
         assert "English" in prompt
         assert "Japanese" in prompt
         assert "layout" in prompt.lower()
         assert "technical terms" in prompt.lower()
-    
+
     def test_prepare_text(self):
         """Test text preparation for translation"""
         config = TranslatorConfig()
         # Use OllamaTranslator to test BaseTranslator methods
         translator = OllamaTranslator(config)
-        
+
         text = "This is a test.\n\nWith multiple paragraphs."
         prepared = translator.prepare_text(text)
-        
+
         assert prepared == text.strip()  # Should strip whitespace
 
 
@@ -84,52 +82,52 @@ class TestOllamaTranslator:
             }
         }
         mock_post.return_value = mock_response
-        
+
         config = TranslatorConfig(
             engine="ollama",
             model="gemma3:12b",
             base_url="http://localhost:11434/api"
         )
         translator = OllamaTranslator(config)
-        
+
         result = translator.translate(
             "This is a test.",
             source_lang="en",
             target_lang="ja"
         )
-        
+
         assert result.translated_text == "これはテストです。"
         assert result.source_lang == "en"
         assert result.target_lang == "ja"
         assert result.success is True
-        
+
         # Check API call
         mock_post.assert_called_once()
         call_args = mock_post.call_args
         assert call_args[0][0] == "http://localhost:11434/api/chat"
-        
+
         payload = call_args[1]["json"]
         assert payload["model"] == "gemma3:12b"
         assert len(payload["messages"]) == 2  # system + user
-    
+
     @patch('requests.post')
     def test_translate_failure(self, mock_post):
         """Test translation failure handling"""
         mock_post.side_effect = Exception("Connection error")
-        
+
         config = TranslatorConfig(engine="ollama")
         translator = OllamaTranslator(config)
-        
+
         result = translator.translate(
             "This is a test.",
             source_lang="en",
             target_lang="ja"
         )
-        
+
         assert result.success is False
         assert result.error is not None
         assert "Connection error" in result.error
-    
+
     @patch('requests.post')
     def test_batch_translate(self, mock_post):
         """Test batch translation"""
@@ -141,17 +139,17 @@ class TestOllamaTranslator:
             {"message": {"content": "これはテスト2です。"}}
         ]
         mock_post.return_value = mock_response
-        
+
         config = TranslatorConfig(engine="ollama")
         translator = OllamaTranslator(config)
-        
+
         texts = ["This is test 1.", "This is test 2."]
         results = translator.translate_batch(
             texts,
             source_lang="en",
             target_lang="ja"
         )
-        
+
         assert len(results) == 2
         assert results[0].translated_text == "これはテスト1です。"
         assert results[1].translated_text == "これはテスト2です。"
@@ -170,23 +168,23 @@ class TestOpenAITranslator:
                 }
             }]
         }
-        
+
         config = TranslatorConfig(
             engine="openai",
             openai_model="gpt-3.5-turbo",
             api_key="test-key"
         )
         translator = OpenAITranslator(config)
-        
+
         result = translator.translate(
             "This is a test.",
             source_lang="en",
             target_lang="ja"
         )
-        
+
         assert result.translated_text == "これはテストです。"
         assert result.success is True
-        
+
         # Check API call
         mock_create.assert_called_once()
         call_kwargs = mock_create.call_args[1]
@@ -199,9 +197,9 @@ class TestTranslatorFactory:
         """Test creating Ollama translator"""
         config = TranslatorConfig(engine="ollama")
         translator = TranslatorFactory.create(config)
-        
+
         assert isinstance(translator, OllamaTranslator)
-    
+
     def test_create_openai_translator(self):
         """Test creating OpenAI translator"""
         config = TranslatorConfig(
@@ -209,13 +207,13 @@ class TestTranslatorFactory:
             api_key="test-key"
         )
         translator = TranslatorFactory.create(config)
-        
+
         assert isinstance(translator, OpenAITranslator)
-    
+
     def test_invalid_engine(self):
         """Test invalid engine raises error"""
         config = TranslatorConfig(engine="invalid")
-        
+
         with pytest.raises(ValueError, match="Unsupported translator engine"):
             TranslatorFactory.create(config)
 
@@ -230,13 +228,13 @@ class TestTranslationResult:
             success=True,
             metadata={"model": "gemma3:12b"}
         )
-        
+
         assert result.translated_text == "これはテストです。"
         assert result.source_lang == "en"
         assert result.target_lang == "ja"
         assert result.success is True
         assert result.metadata["model"] == "gemma3:12b"
-    
+
     def test_failed_result(self):
         """Test failed translation result"""
         result = TranslationResult(
@@ -246,7 +244,7 @@ class TestTranslationResult:
             success=False,
             error="API connection failed"
         )
-        
+
         assert result.success is False
         assert result.error == "API connection failed"
         assert result.translated_text == ""

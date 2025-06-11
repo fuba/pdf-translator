@@ -37,15 +37,15 @@ def test_ollama_connection():
     """Test connection to Ollama server."""
     print("\nTesting Ollama connection...")
     try:
+
         import requests
-        import json
 
         # Use requests directly for better compatibility
         response = requests.get("http://localhost:11434/api/tags")
         response.raise_for_status()
         data = response.json()
 
-        print(f"✓ Connected to Ollama")
+        print("✓ Connected to Ollama")
         print(f"  Available models: {len(data['models'])}")
 
         # Check for gemma3:12b
@@ -76,7 +76,7 @@ def test_spacy_model():
 
         nlp = spacy.load("ja_core_news_sm")
         doc = nlp("これはテストです。")
-        print(f"✓ spaCy Japanese model loaded")
+        print("✓ spaCy Japanese model loaded")
         print(f"  Tokens: {[token.text for token in doc]}")
         return True
     except Exception as e:

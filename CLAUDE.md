@@ -111,3 +111,14 @@ make check  # runs lint, type-check, test
 # Ollama verification
 curl -s http://localhost:11434/api/tags | jq .
 ```
+
+## Development Workflow
+
+### Task Completion Process
+When a significant task or milestone is completed:
+1. Update progress notes in `note/` directory with implementation details
+2. Update the development schedule in `開発スケジュール.md`
+3. Commit changes with descriptive message
+4. Push to GitHub repository
+
+This ensures proper documentation of progress and maintains project history.

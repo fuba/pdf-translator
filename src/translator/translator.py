@@ -1,12 +1,12 @@
 """Translation module using Ollama and OpenAI APIs"""
 import logging
-from typing import List, Dict, Any, Optional, Tuple
-from dataclasses import dataclass, field
-from abc import ABC, abstractmethod
-import requests
-import json
 import os
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import requests
 
 # OpenAI import is optional
 try:
@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TranslatorConfig:
     """Configuration for translator"""
+
     engine: str = "ollama"  # ollama or openai
     model: str = "gemma3:12b"  # Model name for Ollama
     openai_model: str = "gpt-3.5-turbo"  # Model name for OpenAI
@@ -29,7 +30,7 @@ class TranslatorConfig:
     temperature: float = 0.3  # Lower for more consistent translations
     max_tokens: int = 4096  # Maximum tokens per request
     timeout: int = 300  # Request timeout in seconds
-    
+
     @classmethod
     def from_dict(cls, config_dict: Dict[str, Any]) -> "TranslatorConfig":
         """Create config from dictionary"""
@@ -39,6 +40,7 @@ class TranslatorConfig:
 @dataclass
 class TranslationResult:
     """Result of a translation operation"""
+
     translated_text: str
     source_lang: str
     target_lang: str
@@ -49,11 +51,11 @@ class TranslationResult:
 
 class BaseTranslator(ABC):
     """Base class for translators"""
-    
+
     def __init__(self, config: TranslatorConfig):
         self.config = config
-    
-    def get_system_prompt(self, source_lang: str, target_lang: str, 
+
+    def get_system_prompt(self, source_lang: str, target_lang: str,
                          preserve_format: bool = True) -> str:
         """Generate system prompt for translation"""
         lang_names = {
@@ -66,10 +68,10 @@ class BaseTranslator(ABC):
             "es": "Spanish",
             "auto": "auto-detected language"
         }
-        
+
         source_name = lang_names.get(source_lang, source_lang)
         target_name = lang_names.get(target_lang, target_lang)
-        
+
         prompt = f"""You are a professional translator specializing in technical documents.
 Translate the following text from {source_name} to {target_name}.
 
@@ -82,20 +84,20 @@ Important guidelines:
 6. Keep URLs, file paths, and technical identifiers unchanged
 
 Output only the translated text without any explanations or metadata."""
-        
+
         return prompt
-    
+
     def prepare_text(self, text: str) -> str:
         """Prepare text for translation"""
         # Basic preprocessing - can be extended
         return text.strip()
-    
+
     @abstractmethod
-    def translate(self, text: str, source_lang: str = "auto", 
+    def translate(self, text: str, source_lang: str = "auto",
                  target_lang: str = "ja") -> TranslationResult:
         """Translate text"""
         pass
-    
+
     def translate_batch(self, texts: List[str], source_lang: str = "auto",
                        target_lang: str = "ja") -> List[TranslationResult]:
         """Translate multiple texts"""
@@ -108,15 +110,15 @@ Output only the translated text without any explanations or metadata."""
 
 class OllamaTranslator(BaseTranslator):
     """Translator using Ollama API"""
-    
-    def translate(self, text: str, source_lang: str = "auto", 
+
+    def translate(self, text: str, source_lang: str = "auto",
                  target_lang: str = "ja") -> TranslationResult:
         """Translate text using Ollama"""
         try:
             # Prepare request
             system_prompt = self.get_system_prompt(source_lang, target_lang)
             prepared_text = self.prepare_text(text)
-            
+
             # Build payload
             payload = {
                 "model": self.config.model,
@@ -130,7 +132,7 @@ class OllamaTranslator(BaseTranslator):
                     "num_predict": self.config.max_tokens
                 }
             }
-            
+
             # Make request
             url = f"{self.config.base_url}/chat"
             response = requests.post(
@@ -139,11 +141,11 @@ class OllamaTranslator(BaseTranslator):
                 timeout=self.config.timeout
             )
             response.raise_for_status()
-            
+
             # Parse response
             result_data = response.json()
             translated_text = result_data["message"]["content"]
-            
+
             return TranslationResult(
                 translated_text=translated_text,
                 source_lang=source_lang,
@@ -154,7 +156,7 @@ class OllamaTranslator(BaseTranslator):
                     "engine": "ollama"
                 }
             )
-            
+
         except Exception as e:
             logger.error(f"Translation failed: {str(e)}")
             return TranslationResult(
@@ -164,7 +166,7 @@ class OllamaTranslator(BaseTranslator):
                 success=False,
                 error=str(e)
             )
-    
+
     def check_connection(self) -> bool:
         """Check if Ollama server is accessible"""
         try:
@@ -175,7 +177,7 @@ class OllamaTranslator(BaseTranslator):
             return response.status_code == 200
         except:
             return False
-    
+
     def list_models(self) -> List[str]:
         """List available models"""
         try:
@@ -192,7 +194,7 @@ class OllamaTranslator(BaseTranslator):
 
 class OpenAITranslator(BaseTranslator):
     """Translator using OpenAI API"""
-    
+
     def __init__(self, config: TranslatorConfig):
         super().__init__(config)
         if not HAS_OPENAI:
@@ -200,15 +202,15 @@ class OpenAITranslator(BaseTranslator):
         if not config.api_key:
             raise ValueError("OpenAI API key is required")
         openai.api_key = config.api_key
-    
-    def translate(self, text: str, source_lang: str = "auto", 
+
+    def translate(self, text: str, source_lang: str = "auto",
                  target_lang: str = "ja") -> TranslationResult:
         """Translate text using OpenAI"""
         try:
             # Prepare request
             system_prompt = self.get_system_prompt(source_lang, target_lang)
             prepared_text = self.prepare_text(text)
-            
+
             # Make request
             response = openai.ChatCompletion.create(
                 model=self.config.openai_model,
@@ -219,10 +221,10 @@ class OpenAITranslator(BaseTranslator):
                 temperature=self.config.temperature,
                 max_tokens=self.config.max_tokens
             )
-            
+
             # Extract translated text
             translated_text = response["choices"][0]["message"]["content"]
-            
+
             return TranslationResult(
                 translated_text=translated_text,
                 source_lang=source_lang,
@@ -234,7 +236,7 @@ class OpenAITranslator(BaseTranslator):
                     "usage": response.get("usage", {})
                 }
             )
-            
+
         except Exception as e:
             logger.error(f"Translation failed: {str(e)}")
             return TranslationResult(
@@ -248,7 +250,7 @@ class OpenAITranslator(BaseTranslator):
 
 class TranslatorFactory:
     """Factory for creating translator instances"""
-    
+
     @staticmethod
     def create(config: TranslatorConfig) -> BaseTranslator:
         """Create translator based on config"""
@@ -258,20 +260,20 @@ class TranslatorFactory:
             return OpenAITranslator(config)
         else:
             raise ValueError(f"Unsupported translator engine: {config.engine}")
-    
+
     @staticmethod
     def from_config_file(config_path: Path) -> BaseTranslator:
         """Create translator from config file"""
         import yaml
-        
+
         with open(config_path, 'r') as f:
             full_config = yaml.safe_load(f)
-        
+
         translator_config = full_config.get("translator", {})
         config = TranslatorConfig.from_dict(translator_config)
-        
+
         # Check for API key in environment
         if config.engine == "openai" and not config.api_key:
             config.api_key = os.getenv("OPENAI_API_KEY")
-        
+
         return TranslatorFactory.create(config)
