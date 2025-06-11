@@ -1,0 +1,52 @@
+# PDF Translator Configuration
+
+translator:
+  engine: ollama              # ollama / openai
+  model: gemma3:12b          # Ollama model name
+  openai_model: gpt-3.5-turbo # Model to use when engine=openai
+  api_key: ""                 # OpenAI API key (if using OpenAI)
+  base_url: "http://localhost:11434/api"  # Ollama API endpoint
+  temperature: 0.3            # Lower for more consistent translations
+  max_tokens: 4096            # Maximum tokens per request
+
+source_language: auto         # auto-detect or specify (en, zh, etc.)
+target_language: ja           # Japanese by default
+preserve_format: true         # Preserve original formatting
+include_source_term: true     # Include source term in parentheses
+
+# OCR settings
+use_ocr: true                 # Enable OCR for image PDFs
+ocr_languages: ["en", "ja"]   # Languages for OCR
+
+# Layout analysis
+layout_analysis: true         # Enable layout detection
+skip_elements:                # Elements to skip translation
+  - table
+  - figure
+  - code
+
+# Processing limits
+max_pages: 50                 # Maximum pages to process
+batch_size: 5                 # Pages to process in parallel
+
+# Output settings
+output_format: markdown       # markdown / html
+page_separator: hr            # hr / section
+output_dir: "./output"        # Output directory
+
+# Logging
+log_level: INFO               # DEBUG / INFO / WARNING / ERROR
+log_file: "./logs/pdf-translator.log"
+
+# Term extraction
+term_extraction:
+  enabled: true
+  min_frequency: 2            # Minimum frequency for term extraction
+  max_terms: 100              # Maximum terms to extract per document
+  wikipedia_lookup: true      # Look up terms in Wikipedia
+
+# Cache settings
+cache:
+  enabled: true
+  dir: "./cache"
+  ttl_hours: 168              # Cache for 1 week

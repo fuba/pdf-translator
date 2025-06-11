@@ -1,0 +1,72 @@
+[project]
+name = "pdf-translator"
+version = "0.1.0"
+description = "PDF document translator that preserves layout using local LLMs"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    # PDF processing
+    "PyMuPDF>=1.24.0",
+    
+    # OCR
+    "paddleocr>=2.7.0",
+    "paddlepaddle>=2.6.0",
+    
+    # NLP & Term extraction
+    "spacy>=3.7.0",
+    "yake>=0.4.8",
+    "wikipedia-api>=0.6.0",
+    
+    # LLM integration
+    "ollama>=0.1.7",
+    "openai>=1.12.0",
+    "httpx>=0.26.0",
+    
+    # Layout analysis
+    "transformers>=4.36.0",
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    
+    # Rendering & output
+    "jinja2>=3.1.0",
+    "markdown-it-py>=3.0.0",
+    "pyyaml>=6.0.1",
+    
+    # Utilities
+    "pydantic>=2.5.0",
+    "rich>=13.7.0",
+    "click>=8.1.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "mypy>=1.8.0",
+    "ruff>=0.1.0",
+    "pre-commit>=3.5.0",
+]
+
+[project.scripts]
+pdf-translator = "src.main:cli"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "B", "C90", "D"]
+ignore = ["D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+addopts = "--cov=src --cov-report=html --cov-report=term"
