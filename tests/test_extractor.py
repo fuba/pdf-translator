@@ -14,11 +14,18 @@ class TestPDFExtractor:
         """Test PDFExtractor initialization with default parameters"""
         extractor = PDFExtractor()
         assert extractor.max_pages == 50
+        assert extractor.use_ocr is True
 
     def test_init_custom_max_pages(self):
         """Test PDFExtractor initialization with custom max_pages"""
         extractor = PDFExtractor(max_pages=100)
         assert extractor.max_pages == 100
+        
+    def test_init_without_ocr(self):
+        """Test PDFExtractor initialization with OCR disabled"""
+        extractor = PDFExtractor(use_ocr=False)
+        assert extractor.use_ocr is False
+        assert extractor._ocr_extractor is None
 
     def test_extract_pdf_file_not_found(self):
         """Test extract_pdf with non-existent file"""
@@ -242,3 +249,50 @@ class TestPageInfo:
         page = PageInfo(page_num=0, width=595.0, height=842.0, text_blocks=[], raw_text="")
 
         assert page.has_images is False
+
+    def test_is_image_based_page(self, sample_pdf):
+        """Test _is_image_based_page method"""
+        extractor = PDFExtractor()
+        import fitz
+        doc = fitz.open(sample_pdf)
+        
+        # Test with text page (should be False)
+        page = doc[0]
+        assert extractor._is_image_based_page(page) is False
+        
+        doc.close()
+        
+    def test_extract_with_ocr_fallback(self, tmp_path):
+        """Test extraction with OCR fallback for image pages"""
+        from unittest.mock import MagicMock, patch
+        
+        # Create a mock image-based PDF page
+        extractor = PDFExtractor(use_ocr=True)
+        
+        # Create PDF with mock image page
+        import fitz
+        pdf_path = tmp_path / "test_ocr.pdf"
+        doc = fitz.open()
+        page = doc.new_page()
+        doc.save(pdf_path)
+        doc.close()
+        
+        # Mock the OCR functionality
+        with patch.object(extractor, '_is_image_based_page', return_value=True):
+            with patch.object(extractor, '_extract_page_with_ocr') as mock_ocr:
+                mock_page_info = PageInfo(
+                    page_num=0,
+                    width=595.0,
+                    height=842.0,
+                    text_blocks=[TextBlock("OCR text", (0, 0, 100, 20), 0, 12.0, "OCR")],
+                    raw_text="OCR text",
+                    has_images=True,
+                )
+                mock_ocr.return_value = mock_page_info
+                
+                pages = extractor.extract_pdf(pdf_path)
+                
+                assert len(pages) == 1
+                assert pages[0].raw_text == "OCR text"
+                assert pages[0].has_images is True
+                mock_ocr.assert_called_once()

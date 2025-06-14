@@ -3,7 +3,7 @@
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import fitz  # PyMuPDF  # type: ignore
 
@@ -37,14 +37,17 @@ class PageInfo:
 class PDFExtractor:
     """Extract text and structure from PDF files using PyMuPDF."""
 
-    def __init__(self, max_pages: int = 50):
+    def __init__(self, max_pages: int = 50, use_ocr: bool = True):
         """Initialize PDF extractor
 
         Args:
             max_pages: Maximum number of pages to process
+            use_ocr: Whether to use OCR for image-based pages
 
         """
         self.max_pages = max_pages
+        self.use_ocr = use_ocr
+        self._ocr_extractor: Optional[Any] = None
 
     def extract_pdf(self, pdf_path: Path) -> List[PageInfo]:
         """Extract text and structure from PDF file
@@ -99,6 +102,11 @@ class PDFExtractor:
             PageInfo object with extracted data
 
         """
+        # Check if OCR is needed for this page
+        if self.use_ocr and self._is_image_based_page(page):
+            logger.info(f"Page {page_num + 1} appears to be image-based, using OCR")
+            return self._extract_page_with_ocr(page, page_num)
+        
         # Get page dimensions
         rect = page.rect
         width, height = rect.width, rect.height
@@ -255,3 +263,44 @@ class PDFExtractor:
         analysis["font_names"] = sorted(list(font_names_set))
 
         return analysis
+
+    def _is_image_based_page(self, page: fitz.Page) -> bool:
+        """Check if a page is image-based (requires OCR).
+
+        Args:
+            page: PyMuPDF page object
+
+        Returns:
+            True if page is image-based and requires OCR
+
+        """
+        # Check if page has minimal text but has images
+        text = page.get_text().strip()
+        has_images = len(page.get_images()) > 0
+        
+        # If no text but has images, it's likely image-based
+        if not text and has_images:
+            return True
+        
+        # If very little text compared to page size, might be image-based
+        if has_images and len(text) < 100:
+            return True
+        
+        return False
+
+    def _extract_page_with_ocr(self, page: fitz.Page, page_num: int) -> PageInfo:
+        """Extract text from a page using OCR.
+
+        Args:
+            page: PyMuPDF page object
+            page_num: Page number (0-based)
+
+        Returns:
+            PageInfo object with OCR-extracted text
+
+        """
+        if self._ocr_extractor is None:
+            from .ocr_extractor import OCRExtractor
+            self._ocr_extractor = OCRExtractor()
+        
+        return self._ocr_extractor.extract_page_ocr(page, page_num)

@@ -1,8 +1,9 @@
 {
-  "enableAllProjectMcpServers": false,
   "permissions": {
     "allow": [
-      "Bash(./run-uv.sh run:*)"
+      "Bash(./run-uv.sh run:*)",
+      "Bash(chmod:*)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": false
 }
