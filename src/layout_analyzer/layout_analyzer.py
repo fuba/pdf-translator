@@ -66,7 +66,7 @@ class LayoutAnalyzerConfig:
         column_detection_enabled: bool = True,
     ):
         """Initialize layout analyzer configuration.
-        
+
         Args:
             model_name: HuggingFace model name for layout analysis
             confidence_threshold: Minimum confidence for region detection
@@ -88,7 +88,7 @@ class LayoutAnalyzer:
 
     def __init__(self, config: Optional[LayoutAnalyzerConfig] = None):
         """Initialize layout analyzer.
-        
+
         Args:
             config: Layout analyzer configuration
 
@@ -133,11 +133,11 @@ class LayoutAnalyzer:
         pdf_path: Optional[Path] = None
     ) -> LayoutAnalysisResult:
         """Analyze layout of a single page.
-        
+
         Args:
             page_info: Page information from PDFExtractor
             pdf_path: Optional path to PDF for image extraction
-            
+
         Returns:
             Layout analysis result
 
@@ -149,7 +149,9 @@ class LayoutAnalyzer:
         regions = self._analyze_layout_rules(page_info)
 
         # Detect column layout
-        column_count = self._detect_columns(page_info) if self.config.column_detection_enabled else 1
+        column_count = (
+            self._detect_columns(page_info) if self.config.column_detection_enabled else 1
+        )
 
         # Check for tables and figures
         has_tables = any(r.region_type == RegionType.TABLE for r in regions)
@@ -167,10 +169,10 @@ class LayoutAnalyzer:
 
     def _analyze_layout_rules(self, page_info: PageInfo) -> List[LayoutRegion]:
         """Rule-based layout analysis (fallback method).
-        
+
         Args:
             page_info: Page information
-            
+
         Returns:
             List of detected regions
 
@@ -198,11 +200,11 @@ class LayoutAnalyzer:
 
     def _classify_text_block(self, block: TextBlock, page_info: PageInfo) -> RegionType:
         """Classify text block based on characteristics.
-        
+
         Args:
             block: Text block to classify
             page_info: Page information for context
-            
+
         Returns:
             Classified region type
 
@@ -217,8 +219,13 @@ class LayoutAnalyzer:
 
         # Check for titles (larger font, shorter text) - only if we have other blocks for comparison
         if len(page_info.text_blocks) > 1:
-            avg_font_size = sum(b.font_size for b in page_info.text_blocks) / len(page_info.text_blocks)
-            if block.font_size >= avg_font_size * 1.25 and len(text) < 100:  # More lenient threshold
+            avg_font_size = (
+                sum(b.font_size for b in page_info.text_blocks) / len(page_info.text_blocks)
+            )
+            if (
+                block.font_size >= avg_font_size * 1.25
+                and len(text) < 100  # More lenient threshold
+            ):
                 return RegionType.TITLE
         elif block.font_size > 14.0 and len(text) < 100:  # Fallback for single block pages
             return RegionType.TITLE
@@ -235,10 +242,10 @@ class LayoutAnalyzer:
 
     def _detect_columns(self, page_info: PageInfo) -> int:
         """Detect number of columns in the page layout.
-        
+
         Args:
             page_info: Page information
-            
+
         Returns:
             Number of detected columns
 
@@ -283,7 +290,8 @@ class LayoutAnalyzer:
         # Use a more lenient threshold for column detection
         avg_gap = sum(gaps) / len(gaps)
         # For multi-column detection, use a threshold that's reasonable for column separation
-        significant_gap_threshold = max(150, avg_gap * 0.8)  # At least 150 units or 80% of average gap
+        # At least 150 units or 80% of average gap
+        significant_gap_threshold = max(150, avg_gap * 0.8)
 
         # Count large gaps as column separators
         large_gaps = [g for g in column_gaps if g >= significant_gap_threshold]
@@ -296,11 +304,11 @@ class LayoutAnalyzer:
         pdf_path: Optional[Path] = None
     ) -> List[LayoutAnalysisResult]:
         """Analyze layout for multiple pages.
-        
+
         Args:
             pages: List of page information
             pdf_path: Optional path to PDF file
-            
+
         Returns:
             List of layout analysis results
 
@@ -334,11 +342,11 @@ class LayoutAnalyzer:
         region_type: RegionType
     ) -> Dict[int, List[str]]:
         """Extract text by region type across all pages.
-        
+
         Args:
             results: Layout analysis results
             region_type: Type of region to extract
-            
+
         Returns:
             Dictionary of page_num -> list of texts
 

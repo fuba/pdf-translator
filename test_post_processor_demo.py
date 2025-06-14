@@ -1,4 +1,4 @@
-"""Demo script to test post-processing functionality"""
+"""Demo script to test post-processing functionality."""
 import logging
 from pathlib import Path
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_basic_annotation():
-    """Test basic term annotation functionality"""
+    """Test basic term annotation functionality."""
     print("\n=== Testing Basic Term Annotation ===")
 
     config = PostProcessorConfig()
@@ -75,7 +75,7 @@ def test_basic_annotation():
 
 
 def test_first_occurrence_only():
-    """Test that annotations are only added on first occurrence"""
+    """Test that annotations are only added on first occurrence."""
     print("\n=== Testing First Occurrence Only ===")
 
     config = PostProcessorConfig()
@@ -117,7 +117,7 @@ def test_first_occurrence_only():
 
 
 def test_custom_format():
-    """Test custom annotation formats"""
+    """Test custom annotation formats."""
     print("\n=== Testing Custom Annotation Format ===")
 
     # Test different formats
@@ -152,7 +152,7 @@ def test_custom_format():
 
 
 def test_overlapping_terms():
-    """Test handling of overlapping terms"""
+    """Test handling of overlapping terms."""
     print("\n=== Testing Overlapping Terms ===")
 
     config = PostProcessorConfig()
@@ -195,7 +195,7 @@ def test_overlapping_terms():
 
 
 def test_spacing_adjustment():
-    """Test spacing adjustment between Japanese and English"""
+    """Test spacing adjustment between Japanese and English."""
     print("\n=== Testing Spacing Adjustment ===")
 
     config = PostProcessorConfig(spacing_adjustment=True)
@@ -226,7 +226,7 @@ def test_spacing_adjustment():
 
 
 def test_config_loading():
-    """Test loading configuration from file"""
+    """Test loading configuration from file."""
     print("\n=== Testing Configuration Loading ===")
 
     config_path = Path("config/config.yml")
@@ -246,7 +246,7 @@ def test_config_loading():
         })
 
         config = PostProcessorConfig.from_dict(post_config_dict)
-        processor = PostProcessor(config)
+        PostProcessor(config)
 
         print("✓ Loaded configuration:")
         print(f"  Add source terms: {config.add_source_terms}")
@@ -261,7 +261,7 @@ def test_config_loading():
 
 
 def test_with_term_objects():
-    """Test processing with Term objects"""
+    """Test processing with Term objects."""
     print("\n=== Testing with Term Objects ===")
 
     config = PostProcessorConfig()
@@ -292,7 +292,7 @@ def test_with_term_objects():
 
 
 def main():
-    """Run all post-processing tests"""
+    """Run all post-processing tests."""
     print("PDF Translation System - Post-Processing Demo")
     print("=" * 55)
 

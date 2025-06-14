@@ -8,27 +8,27 @@ from src.extractor import PageInfo, PDFExtractor, TextBlock
 
 
 class TestPDFExtractor:
-    """Test cases for PDFExtractor class"""
+    """Test cases for PDFExtractor class."""
 
     def test_init_default(self):
-        """Test PDFExtractor initialization with default parameters"""
+        """Test PDFExtractor initialization with default parameters."""
         extractor = PDFExtractor()
         assert extractor.max_pages == 50
         assert extractor.use_ocr is True
 
     def test_init_custom_max_pages(self):
-        """Test PDFExtractor initialization with custom max_pages"""
+        """Test PDFExtractor initialization with custom max_pages."""
         extractor = PDFExtractor(max_pages=100)
         assert extractor.max_pages == 100
-        
+
     def test_init_without_ocr(self):
-        """Test PDFExtractor initialization with OCR disabled"""
+        """Test PDFExtractor initialization with OCR disabled."""
         extractor = PDFExtractor(use_ocr=False)
         assert extractor.use_ocr is False
         assert extractor._ocr_extractor is None
 
     def test_extract_pdf_file_not_found(self):
-        """Test extract_pdf with non-existent file"""
+        """Test extract_pdf with non-existent file."""
         extractor = PDFExtractor()
         non_existent_path = Path("non_existent_file.pdf")
 
@@ -36,14 +36,14 @@ class TestPDFExtractor:
             extractor.extract_pdf(non_existent_path)
 
     def test_extract_pdf_too_many_pages(self, large_pdf):
-        """Test extract_pdf with PDF exceeding page limit"""
+        """Test extract_pdf with PDF exceeding page limit."""
         extractor = PDFExtractor(max_pages=50)
 
         with pytest.raises(ValueError, match="PDF has .* pages, maximum allowed is 50"):
             extractor.extract_pdf(large_pdf)
 
     def test_extract_pdf_success(self, sample_pdf):
-        """Test successful PDF extraction"""
+        """Test successful PDF extraction."""
         extractor = PDFExtractor()
         pages = extractor.extract_pdf(sample_pdf)
 
@@ -53,7 +53,7 @@ class TestPDFExtractor:
         assert pages[1].page_num == 1
 
     def test_extract_pdf_empty_page(self, empty_pdf):
-        """Test extraction from empty PDF"""
+        """Test extraction from empty PDF."""
         extractor = PDFExtractor()
         pages = extractor.extract_pdf(empty_pdf)
 
@@ -63,7 +63,7 @@ class TestPDFExtractor:
         assert pages[0].raw_text.strip() == ""
 
     def test_page_info_structure(self, sample_pdf):
-        """Test PageInfo structure and content"""
+        """Test PageInfo structure and content."""
         extractor = PDFExtractor()
         pages = extractor.extract_pdf(sample_pdf)
 
@@ -82,7 +82,7 @@ class TestPDFExtractor:
         assert isinstance(page.has_images, bool)
 
     def test_text_block_structure(self, sample_pdf):
-        """Test TextBlock structure and content"""
+        """Test TextBlock structure and content."""
         extractor = PDFExtractor()
         pages = extractor.extract_pdf(sample_pdf)
 
@@ -111,7 +111,7 @@ class TestPDFExtractor:
         assert isinstance(block.block_type, str)
 
     def test_get_text_by_page(self, sample_pdf):
-        """Test get_text_by_page method"""
+        """Test get_text_by_page method."""
         extractor = PDFExtractor()
         pages = extractor.extract_pdf(sample_pdf)
         text_by_page = extractor.get_text_by_page(pages)
@@ -124,7 +124,7 @@ class TestPDFExtractor:
         assert "Chapter 1" in text_by_page[1]
 
     def test_get_text_blocks_by_page(self, sample_pdf):
-        """Test get_text_blocks_by_page method"""
+        """Test get_text_blocks_by_page method."""
         extractor = PDFExtractor()
         pages = extractor.extract_pdf(sample_pdf)
         blocks_by_page = extractor.get_text_blocks_by_page(pages)
@@ -138,7 +138,7 @@ class TestPDFExtractor:
         )
 
     def test_analyze_layout_structure(self, sample_pdf):
-        """Test analyze_layout_structure method"""
+        """Test analyze_layout_structure method."""
         extractor = PDFExtractor()
         pages = extractor.extract_pdf(sample_pdf)
         analysis = extractor.analyze_layout_structure(pages)
@@ -161,14 +161,14 @@ class TestPDFExtractor:
         assert isinstance(analysis["block_types"], dict)
 
     def test_analyze_layout_structure_empty(self):
-        """Test analyze_layout_structure with empty pages list"""
+        """Test analyze_layout_structure with empty pages list."""
         extractor = PDFExtractor()
         analysis = extractor.analyze_layout_structure([])
 
         assert analysis == {}
 
     def test_classify_block_type(self):
-        """Test _classify_block_type method"""
+        """Test _classify_block_type method."""
         extractor = PDFExtractor()
 
         # Test title classification
@@ -188,10 +188,10 @@ class TestPDFExtractor:
 
 
 class TestTextBlock:
-    """Test cases for TextBlock dataclass"""
+    """Test cases for TextBlock dataclass."""
 
     def test_text_block_creation(self):
-        """Test TextBlock creation and attributes"""
+        """Test TextBlock creation and attributes."""
         block = TextBlock(
             text="Sample text",
             bbox=(10.0, 20.0, 100.0, 50.0),
@@ -209,7 +209,7 @@ class TestTextBlock:
         assert block.block_type == "paragraph"
 
     def test_text_block_default_type(self):
-        """Test TextBlock with default block_type"""
+        """Test TextBlock with default block_type."""
         block = TextBlock(
             text="Sample text",
             bbox=(10.0, 20.0, 100.0, 50.0),
@@ -222,10 +222,10 @@ class TestTextBlock:
 
 
 class TestPageInfo:
-    """Test cases for PageInfo dataclass"""
+    """Test cases for PageInfo dataclass."""
 
     def test_page_info_creation(self):
-        """Test PageInfo creation and attributes"""
+        """Test PageInfo creation and attributes."""
         text_blocks = [TextBlock("Sample text", (0, 0, 100, 20), 0, 12.0, "Arial")]
 
         page = PageInfo(
@@ -245,38 +245,38 @@ class TestPageInfo:
         assert page.has_images is False
 
     def test_page_info_default_images(self):
-        """Test PageInfo with default has_images"""
+        """Test PageInfo with default has_images."""
         page = PageInfo(page_num=0, width=595.0, height=842.0, text_blocks=[], raw_text="")
 
         assert page.has_images is False
 
     def test_is_image_based_page(self, sample_pdf):
-        """Test _is_image_based_page method"""
+        """Test _is_image_based_page method."""
         extractor = PDFExtractor()
         import fitz
         doc = fitz.open(sample_pdf)
-        
+
         # Test with text page (should be False)
         page = doc[0]
         assert extractor._is_image_based_page(page) is False
-        
+
         doc.close()
-        
+
     def test_extract_with_ocr_fallback(self, tmp_path):
-        """Test extraction with OCR fallback for image pages"""
-        from unittest.mock import MagicMock, patch
-        
+        """Test extraction with OCR fallback for image pages."""
+        from unittest.mock import patch
+
         # Create a mock image-based PDF page
         extractor = PDFExtractor(use_ocr=True)
-        
+
         # Create PDF with mock image page
         import fitz
         pdf_path = tmp_path / "test_ocr.pdf"
         doc = fitz.open()
-        page = doc.new_page()
+        doc.new_page()
         doc.save(pdf_path)
         doc.close()
-        
+
         # Mock the OCR functionality
         with patch.object(extractor, '_is_image_based_page', return_value=True):
             with patch.object(extractor, '_extract_page_with_ocr') as mock_ocr:
@@ -289,9 +289,9 @@ class TestPageInfo:
                     has_images=True,
                 )
                 mock_ocr.return_value = mock_page_info
-                
+
                 pages = extractor.extract_pdf(pdf_path)
-                
+
                 assert len(pages) == 1
                 assert pages[0].raw_text == "OCR text"
                 assert pages[0].has_images is True

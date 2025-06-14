@@ -38,7 +38,7 @@ class PDFExtractor:
     """Extract text and structure from PDF files using PyMuPDF."""
 
     def __init__(self, max_pages: int = 50, use_ocr: bool = True):
-        """Initialize PDF extractor
+        """Initialize PDF extractor.
 
         Args:
             max_pages: Maximum number of pages to process
@@ -50,7 +50,7 @@ class PDFExtractor:
         self._ocr_extractor: Optional[Any] = None
 
     def extract_pdf(self, pdf_path: Path) -> List[PageInfo]:
-        """Extract text and structure from PDF file
+        """Extract text and structure from PDF file.
 
         Args:
             pdf_path: Path to PDF file
@@ -92,7 +92,7 @@ class PDFExtractor:
             raise
 
     def _extract_page(self, page: fitz.Page, page_num: int) -> PageInfo:
-        """Extract text and structure from a single page
+        """Extract text and structure from a single page.
 
         Args:
             page: PyMuPDF page object
@@ -106,57 +106,13 @@ class PDFExtractor:
         if self.use_ocr and self._is_image_based_page(page):
             logger.info(f"Page {page_num + 1} appears to be image-based, using OCR")
             return self._extract_page_with_ocr(page, page_num)
-        
+
         # Get page dimensions
         rect = page.rect
         width, height = rect.width, rect.height
 
         # Extract text blocks with formatting information
-        text_blocks = []
-        blocks = page.get_text("dict")
-
-        for block in blocks["blocks"]:
-            if "lines" in block:  # Text block
-                block_text_parts = []
-
-                for line in block["lines"]:
-                    line_text_parts = []
-
-                    for span in line["spans"]:
-                        text = span["text"].strip()
-                        if text:
-                            line_text_parts.append(text)
-
-                    if line_text_parts:
-                        block_text_parts.append(" ".join(line_text_parts))
-
-                if block_text_parts:
-                    block_text = "\n".join(block_text_parts)
-
-                    # Get first span for font information
-                    first_span = None
-                    for line in block["lines"]:
-                        if line["spans"]:
-                            first_span = line["spans"][0]
-                            break
-
-                    if first_span:
-                        text_block = TextBlock(
-                            text=block_text,
-                            bbox=(
-                                block["bbox"][0],
-                                block["bbox"][1],
-                                block["bbox"][2],
-                                block["bbox"][3],
-                            ),
-                            page_num=page_num,
-                            font_size=first_span.get("size", 12.0),
-                            font_name=first_span.get("font", "Unknown"),
-                            block_type=self._classify_block_type(
-                                first_span.get("size", 12.0), block_text
-                            ),
-                        )
-                        text_blocks.append(text_block)
+        text_blocks = self._extract_text_blocks(page, page_num)
 
         # Get raw text
         raw_text = page.get_text()
@@ -173,8 +129,95 @@ class PDFExtractor:
             has_images=has_images,
         )
 
+    def _extract_text_blocks(self, page: fitz.Page, page_num: int) -> List[TextBlock]:
+        """Extract text blocks from a page.
+
+        Args:
+            page: PyMuPDF page object
+            page_num: Page number (0-based)
+
+        Returns:
+            List of TextBlock objects
+
+        """
+        text_blocks = []
+        blocks = page.get_text("dict")
+
+        for block in blocks["blocks"]:
+            if "lines" in block:  # Text block
+                text_block = self._process_text_block(block, page_num)
+                if text_block:
+                    text_blocks.append(text_block)
+
+        return text_blocks
+
+    def _process_text_block(self, block: Dict, page_num: int) -> Optional[TextBlock]:
+        """Process a single text block.
+
+        Args:
+            block: Block dictionary from PyMuPDF
+            page_num: Page number (0-based)
+
+        Returns:
+            TextBlock object or None if block is empty
+
+        """
+        block_text_parts = []
+
+        for line in block["lines"]:
+            line_text_parts = []
+
+            for span in line["spans"]:
+                text = span["text"].strip()
+                if text:
+                    line_text_parts.append(text)
+
+            if line_text_parts:
+                block_text_parts.append(" ".join(line_text_parts))
+
+        if not block_text_parts:
+            return None
+
+        block_text = "\n".join(block_text_parts)
+
+        # Get first span for font information
+        first_span = self._get_first_span(block)
+        if not first_span:
+            return None
+
+        return TextBlock(
+            text=block_text,
+            bbox=(
+                block["bbox"][0],
+                block["bbox"][1],
+                block["bbox"][2],
+                block["bbox"][3],
+            ),
+            page_num=page_num,
+            font_size=first_span.get("size", 12.0),
+            font_name=first_span.get("font", "Unknown"),
+            block_type=self._classify_block_type(
+                first_span.get("size", 12.0), block_text
+            ),
+        )
+
+    def _get_first_span(self, block: Dict) -> Optional[Dict]:
+        """Get the first span from a text block.
+
+        Args:
+            block: Block dictionary from PyMuPDF
+
+        Returns:
+            First span dictionary or None
+
+        """
+        for line in block["lines"]:
+            if line["spans"]:
+                return line["spans"][0]
+        return None
+
     def _classify_block_type(self, font_size: float, text: str) -> str:
-        """Classify text block type based on font size and content
+        """Classify text block type based on font size and content.
 
         Args:
             font_size: Font size of the text
@@ -195,7 +238,7 @@ class PDFExtractor:
             return "paragraph"
 
     def get_text_by_page(self, pages: List[PageInfo]) -> Dict[int, str]:
-        """Get plain text for each page
+        """Get plain text for each page.
 
         Args:
             pages: List of PageInfo objects
@@ -207,7 +250,7 @@ class PDFExtractor:
         return {page.page_num: page.raw_text for page in pages}
 
     def get_text_blocks_by_page(self, pages: List[PageInfo]) -> Dict[int, List[TextBlock]]:
-        """Get text blocks for each page
+        """Get text blocks for each page.
 
         Args:
             pages: List of PageInfo objects
@@ -219,7 +262,7 @@ class PDFExtractor:
         return {page.page_num: page.text_blocks for page in pages}
 
     def analyze_layout_structure(self, pages: List[PageInfo]) -> Dict[str, Any]:
-        """Analyze basic layout structure of the document
+        """Analyze basic layout structure of the document.
 
         Args:
             pages: List of PageInfo objects
@@ -277,15 +320,15 @@ class PDFExtractor:
         # Check if page has minimal text but has images
         text = page.get_text().strip()
         has_images = len(page.get_images()) > 0
-        
+
         # If no text but has images, it's likely image-based
         if not text and has_images:
             return True
-        
+
         # If very little text compared to page size, might be image-based
         if has_images and len(text) < 100:
             return True
-        
+
         return False
 
     def _extract_page_with_ocr(self, page: fitz.Page, page_num: int) -> PageInfo:
@@ -302,5 +345,5 @@ class PDFExtractor:
         if self._ocr_extractor is None:
             from .ocr_extractor import OCRExtractor
             self._ocr_extractor = OCRExtractor()
-        
+
         return self._ocr_extractor.extract_page_ocr(page, page_num)

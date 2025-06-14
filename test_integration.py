@@ -1,4 +1,4 @@
-"""Integration test for PDF translation system"""
+"""Integration test for PDF translation system."""
 from pathlib import Path
 
 import yaml
@@ -8,7 +8,7 @@ from src.translator import TranslatorConfig, TranslatorFactory
 
 
 def test_pdf_translation_pipeline():
-    """Test PDF extraction and translation pipeline"""
+    """Test PDF extraction and translation pipeline."""
     print("=== PDF Translation Pipeline Test ===\n")
 
     # 1. Extract text from PDF
@@ -70,7 +70,7 @@ def test_pdf_translation_pipeline():
         def get_system_prompt(self, source_lang: str, target_lang: str,
                              preserve_format: bool = True) -> str:
             return """You are a professional translator. Translate the given text from English to Japanese.
-Keep the translation natural and accurate. 
+Keep the translation natural and accurate.
 IMPORTANT: Only output the translated text, nothing else.
 Do not add any explanations or metadata."""
 

@@ -1,4 +1,4 @@
-"""Demo script to test term mining functionality"""
+"""Demo script to test term mining functionality."""
 import logging
 from pathlib import Path
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_spacy_availability():
-    """Test if spaCy models are available"""
+    """Test if spaCy models are available."""
     print("\n=== Testing spaCy Availability ===")
 
     try:
@@ -25,7 +25,7 @@ def test_spacy_availability():
 
         # Test English model
         try:
-            nlp_en = spacy.load("en_core_web_sm")
+            spacy.load("en_core_web_sm")
             print("✓ English model (en_core_web_sm) is available")
         except Exception as e:
             print(f"✗ English model not available: {e}")
@@ -34,7 +34,7 @@ def test_spacy_availability():
 
         # Test Japanese model (optional)
         try:
-            nlp_ja = spacy.load("ja_core_news_sm")
+            spacy.load("ja_core_news_sm")
             print("✓ Japanese model (ja_core_news_sm) is available")
         except Exception as e:
             print(f"⚠️  Japanese model not available: {e}")
@@ -48,7 +48,7 @@ def test_spacy_availability():
 
 
 def test_term_extraction_simple():
-    """Test simple term extraction"""
+    """Test simple term extraction."""
     print("\n=== Testing Simple Term Extraction ===")
 
     config = TermMinerConfig(
@@ -59,11 +59,11 @@ def test_term_extraction_simple():
     miner = TermMiner(config)
 
     text = """
-    Machine learning is a subset of artificial intelligence (AI) that provides 
-    systems the ability to automatically learn and improve from experience without 
+    Machine learning is a subset of artificial intelligence (AI) that provides
+    systems the ability to automatically learn and improve from experience without
     being explicitly programmed. Deep learning is a subset of machine learning.
-    
-    Neural networks, particularly Convolutional Neural Networks (CNNs) and 
+
+    Neural networks, particularly Convolutional Neural Networks (CNNs) and
     Recurrent Neural Networks (RNNs), are commonly used in deep learning applications.
     Natural Language Processing (NLP) is another important field in AI.
     """
@@ -90,7 +90,7 @@ def test_term_extraction_simple():
 
 
 def test_term_extraction_with_pdf():
-    """Test term extraction with actual PDF content"""
+    """Test term extraction with actual PDF content."""
     print("\n=== Testing Term Extraction with PDF ===")
 
     pdf_path = Path("tests/fixtures/sample_english.pdf")
@@ -134,7 +134,7 @@ def test_term_extraction_with_pdf():
 
 
 def test_wikipedia_lookup():
-    """Test Wikipedia translation lookup"""
+    """Test Wikipedia translation lookup."""
     print("\n=== Testing Wikipedia Translation Lookup ===")
 
     config = TermMinerConfig(
@@ -171,7 +171,7 @@ def test_wikipedia_lookup():
 
 
 def test_config_from_file():
-    """Test loading configuration from config file"""
+    """Test loading configuration from config file."""
     print("\n=== Testing Configuration Loading ===")
 
     config_path = Path("config/config.yml")
@@ -195,7 +195,7 @@ def test_config_from_file():
 
 
 def main():
-    """Run all term mining tests"""
+    """Run all term mining tests."""
     print("PDF Translation System - Term Mining Demo")
     print("=" * 50)
 

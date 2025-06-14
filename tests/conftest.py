@@ -1,4 +1,4 @@
-"""Pytest configuration and fixtures"""
+"""Pytest configuration and fixtures."""
 
 import tempfile
 from pathlib import Path
@@ -10,7 +10,7 @@ import pytest
 
 @pytest.fixture
 def sample_pdf() -> Generator[Path, None, None]:
-    """Create a simple test PDF file"""
+    """Create a simple test PDF file."""
     # Create a temporary PDF file
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
         pdf_path = Path(tmp_file.name)
@@ -44,7 +44,7 @@ def sample_pdf() -> Generator[Path, None, None]:
 
 @pytest.fixture
 def empty_pdf() -> Generator[Path, None, None]:
-    """Create an empty PDF file"""
+    """Create an empty PDF file."""
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
         pdf_path = Path(tmp_file.name)
 
@@ -61,7 +61,7 @@ def empty_pdf() -> Generator[Path, None, None]:
 
 @pytest.fixture
 def large_pdf() -> Generator[Path, None, None]:
-    """Create a PDF with many pages (for testing page limits)"""
+    """Create a PDF with many pages (for testing page limits)."""
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
         pdf_path = Path(tmp_file.name)
 
@@ -84,5 +84,5 @@ def large_pdf() -> Generator[Path, None, None]:
 
 @pytest.fixture
 def fixtures_dir() -> Path:
-    """Get the fixtures directory path"""
+    """Get the fixtures directory path."""
     return Path(__file__).parent / "fixtures"

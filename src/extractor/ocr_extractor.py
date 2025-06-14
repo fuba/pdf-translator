@@ -3,7 +3,7 @@
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional
 
 import fitz  # PyMuPDF  # type: ignore
 import numpy as np
@@ -78,47 +78,47 @@ class OCRExtractor:
         mat = fitz.Matrix(2, 2)  # 2x zoom for better OCR quality
         pix = page.get_pixmap(matrix=mat)
         img_data = pix.tobytes("png")
-        
+
         # Convert to PIL Image then to numpy array
         import io
         img = Image.open(io.BytesIO(img_data))
         img_array = np.array(img)
-        
+
         # Get page dimensions
         rect = page.rect
         width, height = rect.width, rect.height
-        
+
         # Run OCR
         ocr = self._get_ocr()
         result = ocr.ocr(img_array, cls=self.config.cls)
-        
+
         text_blocks = []
         raw_text_parts = []
-        
+
         if result and result[0]:  # Check if OCR found any text
-            for idx, line in enumerate(result[0]):
+            for _idx, line in enumerate(result[0]):
                 # Each line contains [box_points, (text, confidence)]
                 box_points = line[0]
                 text, confidence = line[1]
-                
+
                 # Skip low confidence results
                 if confidence < self.config.drop_score:
                     continue
-                
+
                 # Convert box points to bbox
                 # box_points is [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
                 x_coords = [point[0] for point in box_points]
                 y_coords = [point[1] for point in box_points]
-                
+
                 # Scale coordinates back to original page size (we used 2x zoom)
                 x0 = min(x_coords) / 2
                 y0 = min(y_coords) / 2
                 x1 = max(x_coords) / 2
                 y1 = max(y_coords) / 2
-                
+
                 # Estimate font size based on bbox height
                 font_size = (y1 - y0) * 0.75  # Rough estimation
-                
+
                 text_block = TextBlock(
                     text=text,
                     bbox=(x0, y0, x1, y1),
@@ -129,13 +129,13 @@ class OCRExtractor:
                 )
                 text_blocks.append(text_block)
                 raw_text_parts.append(text)
-        
+
         # Sort text blocks by position (top to bottom, left to right)
         text_blocks.sort(key=lambda b: (b.bbox[1], b.bbox[0]))
-        
+
         # Combine raw text
         raw_text = "\n".join(raw_text_parts) if raw_text_parts else ""
-        
+
         return PageInfo(
             page_num=page_num,
             width=width,
@@ -179,15 +179,15 @@ class OCRExtractor:
         # Check if page has minimal text but has images
         text = page.get_text().strip()
         has_images = len(page.get_images()) > 0
-        
+
         # If no text but has images, it's likely image-based
         if not text and has_images:
             return True
-        
+
         # If very little text compared to page size, might be image-based
         if has_images and len(text) < 100:
             return True
-        
+
         return False
 
     def extract_pdf_with_ocr(self, pdf_path: Path, max_pages: int = 50) -> List[PageInfo]:
@@ -203,22 +203,22 @@ class OCRExtractor:
         """
         if not pdf_path.exists():
             raise FileNotFoundError(f"PDF file not found: {pdf_path}")
-        
+
         logger.info(f"Opening PDF for OCR extraction: {pdf_path}")
-        
+
         try:
             doc = fitz.open(pdf_path)
-            
+
             # Check page count
             if len(doc) > max_pages:
                 raise ValueError(f"PDF has {len(doc)} pages, maximum allowed is {max_pages}")
-            
+
             pages = []
-            
+
             for page_num in range(len(doc)):
                 logger.debug(f"Processing page {page_num + 1}/{len(doc)} with OCR")
                 page = doc[page_num]
-                
+
                 if self.is_image_based_page(page):
                     logger.info(f"Page {page_num + 1} requires OCR")
                     page_info = self.extract_page_ocr(page, page_num)
@@ -227,13 +227,13 @@ class OCRExtractor:
                     from .pdf_extractor import PDFExtractor
                     extractor = PDFExtractor()
                     page_info = extractor._extract_page(page, page_num)
-                
+
                 pages.append(page_info)
-            
+
             doc.close()
             logger.info(f"Successfully extracted {len(pages)} pages with OCR")
             return pages
-            
+
         except Exception as e:
             logger.error(f"Error extracting PDF with OCR: {e}")
             raise

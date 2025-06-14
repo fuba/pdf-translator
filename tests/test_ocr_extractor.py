@@ -1,16 +1,14 @@
 """Tests for OCR text extraction functionality."""
 
-import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import fitz
-import numpy as np
 import pytest
 from PIL import Image, ImageDraw, ImageFont
 
 from src.extractor.ocr_extractor import OCRConfig, OCRExtractor
-from src.extractor.pdf_extractor import PageInfo, TextBlock
+from src.extractor.pdf_extractor import PageInfo
 
 
 class TestOCRConfig:
@@ -54,22 +52,22 @@ class TestOCRExtractor:
         # Create an image with text
         img = Image.new("RGB", (800, 600), color="white")
         draw = ImageDraw.Draw(img)
-        
+
         # Try to use a basic font, fallback to default if not available
         try:
             font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 40)
         except:
             font = ImageFont.load_default()
-        
+
         # Draw text
         draw.text((50, 50), "OCR Test Title", fill="black", font=font)
         draw.text((50, 150), "This is a test document for OCR.", fill="black", font=font)
         draw.text((50, 250), "It contains multiple lines of text.", fill="black", font=font)
-        
+
         # Save as image
         img_path = tmp_path / "test_image.png"
         img.save(img_path)
-        
+
         # Create PDF with the image
         pdf_path = tmp_path / "image_pdf.pdf"
         doc = fitz.open()
@@ -77,7 +75,7 @@ class TestOCRExtractor:
         page.insert_image(fitz.Rect(0, 0, 800, 600), filename=str(img_path))
         doc.save(pdf_path)
         doc.close()
-        
+
         return pdf_path
 
     def test_init_default_config(self, ocr_extractor):
@@ -97,12 +95,12 @@ class TestOCRExtractor:
         """Test lazy loading of PaddleOCR instance."""
         mock_ocr_instance = MagicMock()
         mock_paddle_ocr.return_value = mock_ocr_instance
-        
+
         # First call should create instance
         ocr1 = ocr_extractor._get_ocr()
         assert ocr1 == mock_ocr_instance
         mock_paddle_ocr.assert_called_once()
-        
+
         # Second call should return same instance
         ocr2 = ocr_extractor._get_ocr()
         assert ocr2 == mock_ocr_instance
@@ -119,18 +117,18 @@ class TestOCRExtractor:
         """Test detection of image-based pages."""
         doc = fitz.open(image_pdf)
         page = doc[0]
-        
+
         # Mock page methods for testing
         page.get_text = MagicMock(return_value="")
         page.get_images = MagicMock(return_value=[("img", 0, 0)])
-        
+
         assert ocr_extractor.is_image_based_page(page) is True
-        
+
         # Test text-based page (no images)
         page.get_text = MagicMock(return_value="This is a long text content that indicates text-based page")
         page.get_images = MagicMock(return_value=[])  # No images
         assert ocr_extractor.is_image_based_page(page) is False
-        
+
         doc.close()
 
     @patch("src.extractor.ocr_extractor.PaddleOCR")
@@ -145,27 +143,27 @@ class TestOCRExtractor:
         ]]
         mock_ocr_instance.ocr.return_value = mock_ocr_result
         mock_paddle_ocr.return_value = mock_ocr_instance
-        
+
         doc = fitz.open(image_pdf)
         page = doc[0]
-        
+
         page_info = ocr_extractor.extract_page_ocr(page, 0)
-        
+
         assert isinstance(page_info, PageInfo)
         assert page_info.page_num == 0
         assert page_info.has_images is True
         assert len(page_info.text_blocks) == 2  # Only high confidence results
-        
+
         # Check first text block
         block1 = page_info.text_blocks[0]
         assert block1.text == "OCR Test Title"
         assert block1.font_name == "OCR"
         assert block1.page_num == 0
-        
+
         # Check second text block
         block2 = page_info.text_blocks[1]
         assert block2.text == "This is a test document for OCR."
-        
+
         doc.close()
 
     @patch("src.extractor.ocr_extractor.PaddleOCR")
@@ -178,9 +176,9 @@ class TestOCRExtractor:
         ]]
         mock_ocr_instance.ocr.return_value = mock_ocr_result
         mock_paddle_ocr.return_value = mock_ocr_instance
-        
+
         pages = ocr_extractor.extract_pdf_with_ocr(image_pdf)
-        
+
         assert len(pages) == 1
         assert pages[0].has_images is True
         assert len(pages[0].text_blocks) > 0
@@ -199,7 +197,7 @@ class TestOCRExtractor:
             doc.new_page()
         doc.save(pdf_path)
         doc.close()
-        
+
         with pytest.raises(ValueError, match="maximum allowed is 50"):
             ocr_extractor.extract_pdf_with_ocr(pdf_path)
 
@@ -209,18 +207,18 @@ class TestOCRExtractor:
         # Create mixed PDF
         pdf_path = tmp_path / "mixed.pdf"
         doc = fitz.open()
-        
+
         # Add text page
         page1 = doc.new_page()
         page1.insert_text((50, 50), "This is text-based content")
-        
+
         # Add image page
-        page2 = doc.new_page()
+        doc.new_page()
         # Simulate image page (no text)
-        
+
         doc.save(pdf_path)
         doc.close()
-        
+
         # Mock OCR for image page
         mock_ocr_instance = MagicMock()
         mock_ocr_result = [[
@@ -228,13 +226,13 @@ class TestOCRExtractor:
         ]]
         mock_ocr_instance.ocr.return_value = mock_ocr_result
         mock_paddle_ocr.return_value = mock_ocr_instance
-        
+
         # Mock is_image_based_page to return True for page 2
         with patch.object(ocr_extractor, 'is_image_based_page') as mock_is_image:
             mock_is_image.side_effect = [False, True]  # First page text, second page image
-            
+
             pages = ocr_extractor.extract_pdf_with_ocr(pdf_path)
-            
+
             assert len(pages) == 2
             # First page should have regular text extraction
             assert pages[0].raw_text.strip() == "This is text-based content"

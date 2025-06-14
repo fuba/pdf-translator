@@ -6,10 +6,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import jinja2
-import markdown
 from markupsafe import Markup
 
-from src.extractor import PageInfo, TextBlock
+from src.extractor import PageInfo
 from src.layout_analyzer import LayoutRegion, RegionType
 
 logger = logging.getLogger(__name__)
@@ -18,7 +17,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AnnotatedDocument:
     """Document with translated and annotated text."""
-    
+
     config: Any  # PostProcessorConfig or similar
     annotated_pages: Dict[int, str]  # Page number to annotated text
     title: Optional[str] = None
@@ -34,7 +33,7 @@ class RenderConfig:
     include_style: bool = True  # Include CSS styles for HTML
     page_breaks: bool = True  # Add page breaks between pages
     font_size_mapping: Dict[str, int] = None  # Map font sizes to heading levels
-    
+
     def __post_init__(self):
         """Initialize default font size mapping if not provided."""
         if self.font_size_mapping is None:
@@ -56,18 +55,18 @@ class DocumentRenderer:
 
         """
         self.config = config or RenderConfig()
-        
+
         # Setup Jinja2 environment for HTML templates
         self.jinja_env = jinja2.Environment(
             loader=jinja2.BaseLoader(),
             autoescape=jinja2.select_autoescape(['html', 'xml'])
         )
-        
+
         # Create templates
         self._setup_templates()
 
     def _setup_templates(self):
-        """Setup HTML templates."""
+        """Set up HTML templates."""
         # Main HTML template
         self.html_template = self.jinja_env.from_string("""
 <!DOCTYPE html>
@@ -79,7 +78,8 @@ class DocumentRenderer:
     {% if include_style %}
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                         "Helvetica Neue", Arial, sans-serif;
             line-height: 1.6;
             color: #333;
             max-width: 900px;
@@ -211,11 +211,11 @@ class DocumentRenderer:
             content = self._render_html(document, layout_regions)
         else:
             raise ValueError(f"Unsupported output format: {self.config.output_format}")
-        
+
         # Write output
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(content, encoding="utf-8")
-        
+
         logger.info(f"Rendered document to {output_path}")
 
     def _render_markdown(
@@ -234,22 +234,22 @@ class DocumentRenderer:
 
         """
         lines = []
-        
+
         # Add title if available
         if hasattr(document, 'title') and document.title:
             lines.append(f"# {document.title}")
             lines.append("")
-        
+
         # Process each page
         for page_num, page_text in document.annotated_pages.items():
             # Add page separator
             if self.config.page_breaks and page_num > 0:
                 lines.append("---")
                 lines.append("")
-            
+
             lines.append(f"## Page {page_num + 1}")
             lines.append("")
-            
+
             # If we have layout regions, use them for structure
             if layout_regions and page_num in layout_regions:
                 self._render_regions_markdown(
@@ -262,7 +262,7 @@ class DocumentRenderer:
                     if para.strip():
                         lines.append(para.strip())
                         lines.append("")
-        
+
         return '\n'.join(lines)
 
     def _render_regions_markdown(
@@ -282,8 +282,12 @@ class DocumentRenderer:
         # Group regions by type for better structure
         for region in regions:
             # Extract text from text blocks
-            region_text = "\n".join(block.text for block in region.text_blocks) if region.text_blocks else ""
-            
+            region_text = (
+                "\n".join(block.text for block in region.text_blocks)
+                if region.text_blocks
+                else ""
+            )
+
             if region.region_type == RegionType.TITLE:
                 lines.append(f"### {region_text}")
                 lines.append("")
@@ -328,20 +332,24 @@ class DocumentRenderer:
         """
         # Prepare page data
         pages_data = []
-        
+
         for page_num, page_text in document.annotated_pages.items():
             page_data = {
                 'page_num': page_num,
                 'blocks': [],
                 'regions': []
             }
-            
+
             if layout_regions and page_num in layout_regions:
                 # Use layout regions
                 for region in layout_regions[page_num]:
                     # Extract text from text blocks
-                    region_text = "\n".join(block.text for block in region.text_blocks) if region.text_blocks else ""
-                    
+                    region_text = (
+                "\n".join(block.text for block in region.text_blocks)
+                if region.text_blocks
+                else ""
+            )
+
                     region_data = {
                         'type': region.region_type.value,
                         'blocks': [{
@@ -359,9 +367,9 @@ class DocumentRenderer:
                             'type': 'paragraph',
                             'text': self._escape_html(para.strip())
                         })
-            
+
             pages_data.append(page_data)
-        
+
         # Render template
         # Get target language from config if available
         target_lang = 'en'
@@ -369,7 +377,7 @@ class DocumentRenderer:
             target_lang = document.config.target_lang
         elif hasattr(document, 'config') and hasattr(document.config, 'target_language'):
             target_lang = document.config.target_language
-        
+
         return self.html_template.render(
             title=getattr(document, 'title', 'Translated Document'),
             target_lang=target_lang,
@@ -433,7 +441,7 @@ class DocumentRenderer:
         # Create a simple annotated document
         class SimpleConfig:
             target_lang = "ja"
-        
+
         document = AnnotatedDocument(config=SimpleConfig(), annotated_pages=translated_texts)
-        
+
         self.render(document, output_path, layout_regions)

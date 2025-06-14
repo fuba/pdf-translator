@@ -1,4 +1,4 @@
-"""Translation module using Ollama and OpenAI APIs"""
+"""Translation module using Ollama and OpenAI APIs."""
 import logging
 import os
 from abc import ABC, abstractmethod
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class TranslatorConfig:
-    """Configuration for translator"""
+    """Configuration for translator."""
 
     engine: str = "ollama"  # ollama or openai
     model: str = "gemma3:12b"  # Model name for Ollama
@@ -33,13 +33,13 @@ class TranslatorConfig:
 
     @classmethod
     def from_dict(cls, config_dict: Dict[str, Any]) -> "TranslatorConfig":
-        """Create config from dictionary"""
+        """Create config from dictionary."""
         return cls(**{k: v for k, v in config_dict.items() if k in cls.__dataclass_fields__})
 
 
 @dataclass
 class TranslationResult:
-    """Result of a translation operation"""
+    """Result of a translation operation."""
 
     translated_text: str
     source_lang: str
@@ -50,14 +50,14 @@ class TranslationResult:
 
 
 class BaseTranslator(ABC):
-    """Base class for translators"""
+    """Base class for translators."""
 
     def __init__(self, config: TranslatorConfig):
         self.config = config
 
     def get_system_prompt(self, source_lang: str, target_lang: str,
                          preserve_format: bool = True) -> str:
-        """Generate system prompt for translation"""
+        """Generate system prompt for translation."""
         lang_names = {
             "en": "English",
             "ja": "Japanese",
@@ -78,7 +78,8 @@ Translate the following text from {source_name} to {target_name}.
 Important guidelines:
 1. Preserve the original layout and formatting
 2. Maintain paragraph breaks and structure
-3. For technical terms, provide the translation followed by the original term in parentheses on first occurrence
+3. For technical terms, provide the translation followed by the original term
+   in parentheses on first occurrence
 4. Do not translate code blocks, formulas, or figure/table captions
 5. Ensure accuracy while maintaining natural flow in the target language
 6. Keep URLs, file paths, and technical identifiers unchanged
@@ -88,19 +89,19 @@ Output only the translated text without any explanations or metadata."""
         return prompt
 
     def prepare_text(self, text: str) -> str:
-        """Prepare text for translation"""
+        """Prepare text for translation."""
         # Basic preprocessing - can be extended
         return text.strip()
 
     @abstractmethod
     def translate(self, text: str, source_lang: str = "auto",
                  target_lang: str = "ja") -> TranslationResult:
-        """Translate text"""
+        """Translate text."""
         pass
 
     def translate_batch(self, texts: List[str], source_lang: str = "auto",
                        target_lang: str = "ja") -> List[TranslationResult]:
-        """Translate multiple texts"""
+        """Translate multiple texts."""
         results = []
         for text in texts:
             result = self.translate(text, source_lang, target_lang)
@@ -109,11 +110,11 @@ Output only the translated text without any explanations or metadata."""
 
 
 class OllamaTranslator(BaseTranslator):
-    """Translator using Ollama API"""
+    """Translator using Ollama API."""
 
     def translate(self, text: str, source_lang: str = "auto",
                  target_lang: str = "ja") -> TranslationResult:
-        """Translate text using Ollama"""
+        """Translate text using Ollama."""
         try:
             # Prepare request
             system_prompt = self.get_system_prompt(source_lang, target_lang)
@@ -168,18 +169,18 @@ class OllamaTranslator(BaseTranslator):
             )
 
     def check_connection(self) -> bool:
-        """Check if Ollama server is accessible"""
+        """Check if Ollama server is accessible."""
         try:
             response = requests.get(
                 f"{self.config.base_url}/tags",
                 timeout=5
             )
             return response.status_code == 200
-        except:
+        except Exception:
             return False
 
     def list_models(self) -> List[str]:
-        """List available models"""
+        """List available models."""
         try:
             response = requests.get(
                 f"{self.config.base_url}/tags",
@@ -188,12 +189,12 @@ class OllamaTranslator(BaseTranslator):
             response.raise_for_status()
             data = response.json()
             return [model["name"] for model in data.get("models", [])]
-        except:
+        except Exception:
             return []
 
 
 class OpenAITranslator(BaseTranslator):
-    """Translator using OpenAI API"""
+    """Translator using OpenAI API."""
 
     def __init__(self, config: TranslatorConfig):
         super().__init__(config)
@@ -205,7 +206,7 @@ class OpenAITranslator(BaseTranslator):
 
     def translate(self, text: str, source_lang: str = "auto",
                  target_lang: str = "ja") -> TranslationResult:
-        """Translate text using OpenAI"""
+        """Translate text using OpenAI."""
         try:
             # Prepare request
             system_prompt = self.get_system_prompt(source_lang, target_lang)
@@ -249,11 +250,11 @@ class OpenAITranslator(BaseTranslator):
 
 
 class TranslatorFactory:
-    """Factory for creating translator instances"""
+    """Factory for creating translator instances."""
 
     @staticmethod
     def create(config: TranslatorConfig) -> BaseTranslator:
-        """Create translator based on config"""
+        """Create translator based on config."""
         if config.engine == "ollama":
             return OllamaTranslator(config)
         elif config.engine == "openai":
@@ -263,7 +264,7 @@ class TranslatorFactory:
 
     @staticmethod
     def from_config_file(config_path: Path) -> BaseTranslator:
-        """Create translator from config file"""
+        """Create translator from config file."""
         import yaml
 
         with open(config_path, 'r') as f:

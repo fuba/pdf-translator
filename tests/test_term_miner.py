@@ -1,4 +1,4 @@
-"""Tests for term_miner module"""
+"""Tests for term_miner module."""
 from unittest.mock import Mock, patch
 
 from src.term_miner import Term, TermExtractionResult, TermMiner, TermMinerConfig, WikipediaLookup
@@ -6,7 +6,7 @@ from src.term_miner import Term, TermExtractionResult, TermMiner, TermMinerConfi
 
 class TestTermMinerConfig:
     def test_from_dict(self):
-        """Test creating config from dictionary"""
+        """Test creating config from dictionary."""
         config_dict = {
             "enabled": True,
             "min_frequency": 3,
@@ -23,7 +23,7 @@ class TestTermMinerConfig:
         assert config.languages == ["en", "ja"]
 
     def test_default_values(self):
-        """Test default configuration values"""
+        """Test default configuration values."""
         config = TermMinerConfig()
 
         assert config.enabled is True
@@ -34,7 +34,7 @@ class TestTermMinerConfig:
 
 class TestTerm:
     def test_term_creation(self):
-        """Test Term dataclass creation"""
+        """Test Term dataclass creation."""
         term = Term(
             text="machine learning",
             frequency=5,
@@ -49,7 +49,7 @@ class TestTerm:
         assert term.confidence == 0.9
 
     def test_term_normalization(self):
-        """Test term text normalization"""
+        """Test term text normalization."""
         term1 = Term("Machine Learning", 1)
         term2 = Term("machine learning", 1)
 
@@ -60,7 +60,7 @@ class TestTerm:
 class TestWikipediaLookup:
     @patch('requests.get')
     def test_lookup_success(self, mock_get):
-        """Test successful Wikipedia lookup"""
+        """Test successful Wikipedia lookup."""
         # Mock search response first, then page response
         search_response = Mock()
         search_response.status_code = 200
@@ -103,7 +103,7 @@ class TestWikipediaLookup:
 
     @patch('requests.get')
     def test_lookup_failure(self, mock_get):
-        """Test Wikipedia lookup failure"""
+        """Test Wikipedia lookup failure."""
         mock_get.side_effect = Exception("Network error")
 
         lookup = WikipediaLookup()
@@ -113,7 +113,7 @@ class TestWikipediaLookup:
 
     @patch('requests.get')
     def test_lookup_no_translation(self, mock_get):
-        """Test Wikipedia lookup with no translation available"""
+        """Test Wikipedia lookup with no translation available."""
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
@@ -137,7 +137,7 @@ class TestWikipediaLookup:
 
 class TestTermMiner:
     def setup_method(self):
-        """Setup for each test method"""
+        """Set up for each test method."""
         self.config = TermMinerConfig(
             min_frequency=2,
             max_terms=10,
@@ -147,7 +147,7 @@ class TestTermMiner:
 
     @patch('spacy.load')
     def test_extract_terms_basic(self, mock_spacy_load):
-        """Test basic term extraction"""
+        """Test basic term extraction."""
         # Mock spaCy model
         mock_nlp = Mock()
         mock_doc = Mock()
@@ -178,7 +178,7 @@ class TestTermMiner:
         assert len(result.terms) >= 0  # Depends on implementation
 
     def test_filter_terms_by_frequency(self):
-        """Test filtering terms by minimum frequency"""
+        """Test filtering terms by minimum frequency."""
         terms = [
             Term("term1", 3),
             Term("term2", 1),  # Should be filtered out
@@ -195,7 +195,7 @@ class TestTermMiner:
         assert "term4" in filtered_texts
 
     def test_limit_terms(self):
-        """Test limiting number of terms"""
+        """Test limiting number of terms."""
         terms = [Term(f"term{i}", i+1) for i in range(20)]
 
         limited = self.miner._limit_terms(terms, max_terms=5)
@@ -207,7 +207,7 @@ class TestTermMiner:
 
     @patch('spacy.load')
     def test_extract_terms_with_context(self, mock_spacy_load):
-        """Test term extraction with context"""
+        """Test term extraction with context."""
         mock_nlp = Mock()
         mock_doc = Mock()
 
@@ -227,7 +227,7 @@ class TestTermMiner:
         assert isinstance(context, str)
 
     def test_merge_similar_terms(self):
-        """Test merging of similar terms"""
+        """Test merging of similar terms."""
         terms = [
             Term("machine learning", 3),
             Term("Machine Learning", 2),  # Should be merged
@@ -244,7 +244,7 @@ class TestTermMiner:
 
 class TestTermExtractionResult:
     def test_result_creation(self):
-        """Test TermExtractionResult creation"""
+        """Test TermExtractionResult creation."""
         terms = [
             Term("API", 3, translations={"ja": "API"}),
             Term("database", 2, translations={"ja": "データベース"})
@@ -263,7 +263,7 @@ class TestTermExtractionResult:
         assert result.filtered_terms == 8
 
     def test_get_translations_dict(self):
-        """Test getting translations as dictionary"""
+        """Test getting translations as dictionary."""
         terms = [
             Term("API", 3, translations={"ja": "API"}),
             Term("database", 2, translations={"ja": "データベース"})
@@ -276,7 +276,7 @@ class TestTermExtractionResult:
         assert translations["database"] == "データベース"
 
     def test_failed_result(self):
-        """Test failed extraction result"""
+        """Test failed extraction result."""
         result = TermExtractionResult(
             terms=[],
             success=False,

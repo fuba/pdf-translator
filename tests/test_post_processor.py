@@ -1,4 +1,4 @@
-"""Tests for post_processor module"""
+"""Tests for post_processor module."""
 
 from src.post_processor import (
     PostProcessingResult,
@@ -11,7 +11,7 @@ from src.term_miner import Term
 
 class TestPostProcessorConfig:
     def test_from_dict(self):
-        """Test creating config from dictionary"""
+        """Test creating config from dictionary."""
         config_dict = {
             "add_source_terms": True,
             "source_term_format": "訳語（原語）",
@@ -28,7 +28,7 @@ class TestPostProcessorConfig:
         assert config.min_term_length == 3
 
     def test_default_values(self):
-        """Test default configuration values"""
+        """Test default configuration values."""
         config = PostProcessorConfig()
 
         assert config.add_source_terms is True
@@ -39,7 +39,7 @@ class TestPostProcessorConfig:
 
 class TestTermAnnotation:
     def test_annotation_creation(self):
-        """Test TermAnnotation creation"""
+        """Test TermAnnotation creation."""
         annotation = TermAnnotation(
             original_term="machine learning",
             translated_term="機械学習",
@@ -53,7 +53,7 @@ class TestTermAnnotation:
         assert annotation.first_occurrence is True
 
     def test_format_annotation(self):
-        """Test annotation formatting"""
+        """Test annotation formatting."""
         annotation = TermAnnotation(
             original_term="API",
             translated_term="API",
@@ -70,12 +70,12 @@ class TestTermAnnotation:
 
 class TestPostProcessor:
     def setup_method(self):
-        """Setup for each test method"""
+        """Set up for each test method."""
         self.config = PostProcessorConfig()
         self.processor = PostProcessor(self.config)
 
     def test_process_basic(self):
-        """Test basic post-processing"""
+        """Test basic post-processing."""
         translated_text = "これは機械学習に関する文書です。"
         term_dict = {"machine learning": "機械学習"}
 
@@ -86,7 +86,7 @@ class TestPostProcessor:
         assert len(result.processed_text) > 0
 
     def test_add_source_term_annotations(self):
-        """Test adding source term annotations"""
+        """Test adding source term annotations."""
         translated_text = "機械学習は人工知能の一分野です。深層学習も重要な技術です。"
         terms = [
             Term("machine learning", 1, translations={"ja": "機械学習"}),
@@ -103,7 +103,7 @@ class TestPostProcessor:
         assert "人工知能（artificial intelligence）" in result.processed_text
 
     def test_first_occurrence_only(self):
-        """Test that source terms are only added on first occurrence"""
+        """Test that source terms are only added on first occurrence."""
         translated_text = "機械学習について説明します。機械学習は重要です。"
         term_dict = {"machine learning": "機械学習"}
 
@@ -117,7 +117,7 @@ class TestPostProcessor:
         assert plain_count >= 1  # Other occurrences remain plain
 
     def test_preserve_line_breaks(self):
-        """Test preserving line breaks"""
+        """Test preserving line breaks."""
         translated_text = "第一段落です。\n\n第二段落です。\n第三段落です。"
         term_dict = {}
 
@@ -128,12 +128,15 @@ class TestPostProcessor:
         assert result.processed_text.count("\n") >= 3
 
     def test_spacing_adjustment(self):
-        """Test spacing adjustment between Japanese and English"""
+        """Test spacing adjustment between Japanese and English."""
         config = PostProcessorConfig(spacing_adjustment=True)
         processor = PostProcessor(config)
 
         # Text with mixed Japanese and English without proper spacing
-        translated_text = "これはAPI（Application Programming Interface）の説明です。JSONファイルを使用します。"
+        translated_text = (
+            "これはAPI（Application Programming Interface）の説明です。"
+            "JSONファイルを使用します。"
+        )
         term_dict = {}
 
         result = processor.process(translated_text, term_dict)
@@ -142,7 +145,7 @@ class TestPostProcessor:
         assert result.success is True
 
     def test_min_term_length_filter(self):
-        """Test filtering terms by minimum length"""
+        """Test filtering terms by minimum length."""
         config = PostProcessorConfig(min_term_length=5)
         processor = PostProcessor(config)
 
@@ -160,7 +163,7 @@ class TestPostProcessor:
         assert "機械学習（machine learning）" in result.processed_text
 
     def test_case_insensitive_matching(self):
-        """Test case-insensitive term matching"""
+        """Test case-insensitive term matching."""
         translated_text = "機械学習とディープラーニングについて"
         term_dict = {
             "Machine Learning": "機械学習",
@@ -174,7 +177,7 @@ class TestPostProcessor:
         assert "ディープラーニング（Deep Learning）" in result.processed_text
 
     def test_overlapping_terms(self):
-        """Test handling overlapping terms"""
+        """Test handling overlapping terms."""
         translated_text = "自然言語処理システムについて"
         term_dict = {
             "natural language": "自然言語",
@@ -189,7 +192,7 @@ class TestPostProcessor:
         assert "自然言語（natural language）処理" not in result.processed_text
 
     def test_custom_format(self):
-        """Test custom annotation format"""
+        """Test custom annotation format."""
         config = PostProcessorConfig(
             source_term_format="{translation} [{original}]"
         )
@@ -203,7 +206,7 @@ class TestPostProcessor:
         assert "機械学習 [machine learning]" in result.processed_text
 
     def test_no_source_terms(self):
-        """Test processing without adding source terms"""
+        """Test processing without adding source terms."""
         config = PostProcessorConfig(add_source_terms=False)
         processor = PostProcessor(config)
 
@@ -217,7 +220,7 @@ class TestPostProcessor:
         assert result.processed_text == translated_text  # Should be unchanged
 
     def test_process_with_terms_list(self):
-        """Test processing with list of Term objects"""
+        """Test processing with list of Term objects."""
         translated_text = "機械学習と人工知能について"
         terms = [
             Term("machine learning", 2, translations={"ja": "機械学習"}),
@@ -231,7 +234,7 @@ class TestPostProcessor:
         assert "人工知能（artificial intelligence）" in result.processed_text
 
     def test_error_handling(self):
-        """Test error handling in post-processing"""
+        """Test error handling in post-processing."""
         # Test with None input
         result = self.processor.process(None, {})
 
@@ -239,7 +242,7 @@ class TestPostProcessor:
         assert result.error is not None
 
     def test_statistics(self):
-        """Test post-processing statistics"""
+        """Test post-processing statistics."""
         translated_text = "機械学習と深層学習について。機械学習は重要です。"
         term_dict = {
             "machine learning": "機械学習",
@@ -255,7 +258,7 @@ class TestPostProcessor:
 
 class TestPostProcessingResult:
     def test_result_creation(self):
-        """Test PostProcessingResult creation"""
+        """Test PostProcessingResult creation."""
         result = PostProcessingResult(
             processed_text="処理済みテキスト",
             success=True,
@@ -269,7 +272,7 @@ class TestPostProcessingResult:
         assert result.terms_processed == 5
 
     def test_failed_result(self):
-        """Test failed processing result"""
+        """Test failed processing result."""
         result = PostProcessingResult(
             processed_text="",
             success=False,

@@ -1,4 +1,4 @@
-"""Term mining and translation lookup module"""
+"""Term mining and translation lookup module."""
 import logging
 import re
 from collections import Counter
@@ -10,8 +10,6 @@ import requests
 # spaCy import with error handling
 try:
     import spacy
-    from spacy.lang.en import English
-    from spacy.lang.ja import Japanese
     HAS_SPACY = True
 except ImportError:
     HAS_SPACY = False
@@ -21,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class TermMinerConfig:
-    """Configuration for term mining"""
+    """Configuration for term mining."""
 
     enabled: bool = True
     min_frequency: int = 2  # Minimum frequency for term extraction
@@ -36,13 +34,13 @@ class TermMinerConfig:
 
     @classmethod
     def from_dict(cls, config_dict: Dict[str, Any]) -> "TermMinerConfig":
-        """Create config from dictionary"""
+        """Create config from dictionary."""
         return cls(**{k: v for k, v in config_dict.items() if k in cls.__dataclass_fields__})
 
 
 @dataclass
 class Term:
-    """Represents an extracted term with metadata"""
+    """Represents an extracted term with metadata."""
 
     text: str
     frequency: int
@@ -52,13 +50,13 @@ class Term:
     category: str = "general"  # Term category (technical, medical, etc.)
 
     def __post_init__(self):
-        """Normalize term text"""
+        """Normalize term text."""
         self.text = self.text.strip()
 
 
 @dataclass
 class TermExtractionResult:
-    """Result of term extraction operation"""
+    """Result of term extraction operation."""
 
     terms: List[Term]
     success: bool = True
@@ -68,7 +66,7 @@ class TermExtractionResult:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def get_translations_dict(self, target_lang: str = "ja") -> Dict[str, str]:
-        """Get translations as a simple dictionary"""
+        """Get translations as a simple dictionary."""
         return {
             term.text: term.translations.get(target_lang, term.text)
             for term in self.terms
@@ -77,7 +75,7 @@ class TermExtractionResult:
 
 
 class WikipediaLookup:
-    """Wikipedia API lookup for term translations"""
+    """Wikipedia API lookup for term translations."""
 
     def __init__(self, timeout: int = 10):
         self.timeout = timeout
@@ -86,7 +84,7 @@ class WikipediaLookup:
 
     def lookup_term(self, term: str, source_lang: str = "en",
                    target_lang: str = "ja") -> Optional[Dict[str, Any]]:
-        """Look up term translation and definition in Wikipedia"""
+        """Look up term translation and definition in Wikipedia."""
         try:
             # First, search for the term
             search_params = {
@@ -164,7 +162,7 @@ class WikipediaLookup:
 
 
 class TermMiner:
-    """Extract and manage technical terms from text"""
+    """Extract and manage technical terms from text."""
 
     def __init__(self, config: TermMinerConfig):
         self.config = config
@@ -175,7 +173,7 @@ class TermMiner:
             logger.warning("spaCy not available. Term extraction will be limited.")
 
     def _load_spacy_model(self, language: str) -> Optional[Any]:
-        """Load spaCy model for given language"""
+        """Load spaCy model for given language."""
         if not HAS_SPACY:
             return None
 
@@ -196,7 +194,7 @@ class TermMiner:
             return None
 
     def extract_terms(self, text: str, source_lang: str = "en") -> TermExtractionResult:
-        """Extract terms from text"""
+        """Extract terms from text."""
         if not self.config.enabled:
             return TermExtractionResult(terms=[], success=True)
 
@@ -259,7 +257,7 @@ class TermMiner:
             )
 
     def _extract_terms_fallback(self, text: str) -> TermExtractionResult:
-        """Fallback term extraction without spaCy"""
+        """Fallback term extraction without spaCy."""
         try:
             terms = []
 
@@ -290,7 +288,7 @@ class TermMiner:
             )
 
     def _extract_named_entities(self, doc: Any, text: str) -> List[Term]:
-        """Extract named entities as terms"""
+        """Extract named entities as terms."""
         terms = []
 
         for ent in doc.ents:
@@ -309,7 +307,7 @@ class TermMiner:
         return terms
 
     def _extract_noun_phrases(self, doc: Any, text: str) -> List[Term]:
-        """Extract noun phrases that might be technical terms"""
+        """Extract noun phrases that might be technical terms."""
         terms = []
 
         for chunk in doc.noun_chunks:
@@ -331,7 +329,7 @@ class TermMiner:
         return terms
 
     def _extract_acronyms(self, text: str) -> List[Term]:
-        """Extract acronyms and capitalized terms"""
+        """Extract acronyms and capitalized terms."""
         terms = []
 
         # Pattern for acronyms (2-6 uppercase letters)
@@ -354,13 +352,14 @@ class TermMiner:
         return terms
 
     def _extract_technical_patterns(self, text: str) -> List[Term]:
-        """Extract technical terms using patterns"""
+        """Extract technical terms using patterns."""
         terms = []
 
         # Common technical term patterns
         patterns = [
             r'\b[A-Z][a-z]+\s+[A-Z][a-z]+\b',  # Title Case terms like "Machine Learning"
-            r'\b\w+\s*\([A-Z]+\)\b',  # Terms with acronyms like "Application Programming Interface (API)"
+            # Terms with acronyms like "Application Programming Interface (API)"
+            r'\b\w+\s*\([A-Z]+\)\b',
             r'\b\w+-\w+\b',  # Hyphenated terms
         ]
 
@@ -382,13 +381,13 @@ class TermMiner:
 
     def _extract_context(self, text: str, term: str, position: int,
                         window: int = 50) -> str:
-        """Extract context around a term"""
+        """Extract context around a term."""
         start = max(0, position - window)
         end = min(len(text), position + len(term) + window)
         return text[start:end].strip()
 
     def _count_frequencies(self, terms: List[Term]) -> List[Term]:
-        """Count term frequencies and merge duplicates"""
+        """Count term frequencies and merge duplicates."""
         term_counts = Counter()
         term_objects = {}
 
@@ -411,7 +410,7 @@ class TermMiner:
         return result_terms
 
     def _merge_similar_terms(self, terms: List[Term]) -> List[Term]:
-        """Merge similar terms (case variations, etc.)"""
+        """Merge similar terms (case variations, etc.)."""
         merged = {}
 
         for term in terms:
@@ -430,11 +429,11 @@ class TermMiner:
 
     def _filter_terms_by_frequency(self, terms: List[Term],
                                   min_frequency: int) -> List[Term]:
-        """Filter terms by minimum frequency"""
+        """Filter terms by minimum frequency."""
         return [term for term in terms if term.frequency >= min_frequency]
 
     def _limit_terms(self, terms: List[Term], max_terms: int) -> List[Term]:
-        """Limit number of terms, keeping highest frequency ones"""
+        """Limit number of terms, keeping highest frequency ones."""
         # Sort by frequency (descending) and confidence
         sorted_terms = sorted(
             terms,
@@ -444,7 +443,7 @@ class TermMiner:
         return sorted_terms[:max_terms]
 
     def _add_translations(self, terms: List[Term], source_lang: str) -> List[Term]:
-        """Add translations to terms using Wikipedia lookup"""
+        """Add translations to terms using Wikipedia lookup."""
         if not self.wikipedia:
             return terms
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create persistent sample PDF files for testing"""
+"""Create persistent sample PDF files for testing."""
 
 from pathlib import Path
 
@@ -7,7 +7,7 @@ import fitz  # PyMuPDF
 
 
 def create_sample_pdf(output_path: Path) -> None:
-    """Create a comprehensive sample PDF for testing"""
+    """Create a comprehensive sample PDF for testing."""
     doc = fitz.open()
 
     # Page 1: Title page with multiple font sizes
@@ -43,7 +43,9 @@ def create_sample_pdf(output_path: Path) -> None:
 
     # Page 3: Technical terms and algorithms
     page3 = doc.new_page()
-    page3.insert_text((50, 100), "2. 技術用語・アルゴリズム", fontsize=16, fontname="Helvetica-Bold")
+    page3.insert_text(
+        (50, 100), "2. 技術用語・アルゴリズム", fontsize=16, fontname="Helvetica-Bold"
+    )
     page3.insert_text((50, 140), "以下の技術用語が文書に含まれています：", fontsize=12)
     page3.insert_text((70, 170), "• API (Application Programming Interface)", fontsize=12)
     page3.insert_text((70, 190), "• OCR (Optical Character Recognition)", fontsize=12)
@@ -67,24 +69,38 @@ def create_sample_pdf(output_path: Path) -> None:
 
 
 def create_english_sample_pdf(output_path: Path) -> None:
-    """Create an English sample PDF for testing translation"""
+    """Create an English sample PDF for testing translation."""
     doc = fitz.open()
 
     # Page 1: Title page
     page1 = doc.new_page()
-    page1.insert_text((50, 100), "Machine Learning Research Paper", fontsize=20, fontname="Helvetica-Bold")
-    page1.insert_text((50, 150), "Deep Learning Approaches for Natural Language Processing", fontsize=16)
+    page1.insert_text(
+        (50, 100), "Machine Learning Research Paper", fontsize=20, fontname="Helvetica-Bold"
+    )
+    page1.insert_text(
+        (50, 150), "Deep Learning Approaches for Natural Language Processing", fontsize=16
+    )
     page1.insert_text((50, 200), "Abstract", fontsize=14, fontname="Helvetica-Bold")
-    page1.insert_text((50, 230), "This paper presents a comprehensive study of deep learning", fontsize=12)
-    page1.insert_text((50, 250), "techniques applied to natural language processing tasks.", fontsize=12)
-    page1.insert_text((50, 270), "We evaluate various neural network architectures including", fontsize=12)
+    page1.insert_text(
+        (50, 230), "This paper presents a comprehensive study of deep learning", fontsize=12
+    )
+    page1.insert_text(
+        (50, 250), "techniques applied to natural language processing tasks.", fontsize=12
+    )
+    page1.insert_text(
+        (50, 270), "We evaluate various neural network architectures including", fontsize=12
+    )
     page1.insert_text((50, 290), "transformers, LSTMs, and attention mechanisms.", fontsize=12)
 
     # Page 2: Introduction
     page2 = doc.new_page()
     page2.insert_text((50, 100), "1. Introduction", fontsize=16, fontname="Helvetica-Bold")
-    page2.insert_text((50, 140), "Natural Language Processing (NLP) has seen remarkable progress", fontsize=12)
-    page2.insert_text((50, 160), "with the advent of deep learning. Key technologies include:", fontsize=12)
+    page2.insert_text(
+        (50, 140), "Natural Language Processing (NLP) has seen remarkable progress", fontsize=12
+    )
+    page2.insert_text(
+        (50, 160), "with the advent of deep learning. Key technologies include:", fontsize=12
+    )
     page2.insert_text((70, 200), "• Recurrent Neural Networks (RNNs)", fontsize=12)
     page2.insert_text((70, 220), "• Long Short-Term Memory (LSTM) networks", fontsize=12)
     page2.insert_text((70, 240), "• Transformer architecture", fontsize=12)
@@ -104,7 +120,7 @@ def create_english_sample_pdf(output_path: Path) -> None:
 
 
 def main():
-    """Create sample PDF files"""
+    """Create sample PDF files."""
     # Create output directory
     samples_dir = Path("tests/fixtures")
     samples_dir.mkdir(parents=True, exist_ok=True)

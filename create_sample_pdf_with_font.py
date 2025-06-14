@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create sample PDF files with proper Japanese font support"""
+"""Create sample PDF files with proper Japanese font support."""
 
 from pathlib import Path
 
@@ -7,7 +7,7 @@ import fitz  # PyMuPDF
 
 
 def check_system_fonts():
-    """Check available Japanese fonts on the system"""
+    """Check available Japanese fonts on the system."""
     print("Checking available Japanese fonts...")
 
     # Common Japanese font paths on macOS
@@ -28,7 +28,7 @@ def check_system_fonts():
 
 
 def create_text_only_japanese_pdf(output_path: Path) -> None:
-    """Create a simple text-only Japanese PDF without embedded fonts"""
+    """Create a simple text-only Japanese PDF without embedded fonts."""
     doc = fitz.open()
 
     # Page 1: Title page
@@ -96,7 +96,7 @@ Automatic PDF Translation System
 
 以下の技術用語が文書に含まれています：
 • API (Application Programming Interface)
-• OCR (Optical Character Recognition) 
+• OCR (Optical Character Recognition)
 • LLM (Large Language Model)
 • Transformer アーキテクチャ
 • PyTorch および spaCy ライブラリ
@@ -106,22 +106,22 @@ Automatic PDF Translation System
 1. PDFからテキスト抽出
    - PyMuPDFを使用した高速処理
    - 文字位置情報の保持
-   
+
 2. レイアウト構造解析
    - LayoutLMによる文書構造認識
    - 段組み・表・図の識別
-   
+
 3. 専門用語の抽出と辞書作成
    - spaCyによる形態素解析
    - Wikipedia APIでの用語検索
-   
+
 4. 文脈を考慮した機械翻訳
    - Ollama/OpenAI APIの利用
    - プロンプトエンジニアリング
-   
+
 5. 用語注釈の付与
    - 初出時に「訳語（原語）」形式
-   
+
 6. 最終レンダリング
    - HTML/Markdown形式での出力"""
 
@@ -139,7 +139,7 @@ Automatic PDF Translation System
 
 
 def create_mixed_content_pdf(output_path: Path) -> None:
-    """Create a PDF with mixed Japanese and English content"""
+    """Create a PDF with mixed Japanese and English content."""
     doc = fitz.open()
 
     # Create pages with mixed content
@@ -160,7 +160,7 @@ layout while translating documents between Japanese and English.
 
 Key Features / 主な機能:
 • Layout preservation / レイアウト保持
-• Technical term extraction / 専門用語抽出  
+• Technical term extraction / 専門用語抽出
 • Context-aware translation / 文脈考慮型翻訳
 • Multi-page support (max 50 pages) / 複数ページ対応（最大50ページ）
 
@@ -184,7 +184,7 @@ Supported Technologies / 使用技術:
 
 
 def main():
-    """Create various sample PDF files"""
+    """Create various sample PDF files."""
     # Check system fonts
     available_fonts = check_system_fonts()
 

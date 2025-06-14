@@ -1,4 +1,4 @@
-"""Post-processing module for translation refinement and term annotation"""
+"""Post-processing module for translation refinement and term annotation."""
 import logging
 import re
 from dataclasses import dataclass, field
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class PostProcessorConfig:
-    """Configuration for post-processing"""
+    """Configuration for post-processing."""
 
     add_source_terms: bool = True  # Add source terms in parentheses
     source_term_format: str = "{translation}（{original}）"  # Format for term annotation
@@ -23,13 +23,13 @@ class PostProcessorConfig:
 
     @classmethod
     def from_dict(cls, config_dict: Dict[str, Any]) -> "PostProcessorConfig":
-        """Create config from dictionary"""
+        """Create config from dictionary."""
         return cls(**{k: v for k, v in config_dict.items() if k in cls.__dataclass_fields__})
 
 
 @dataclass
 class TermAnnotation:
-    """Represents a term annotation"""
+    """Represents a term annotation."""
 
     original_term: str
     translated_term: str
@@ -37,7 +37,7 @@ class TermAnnotation:
     first_occurrence: bool = True
 
     def format_annotation(self, format_string: str) -> str:
-        """Format the annotation using the given format string"""
+        """Format the annotation using the given format string."""
         return format_string.format(
             translation=self.translated_term,
             original=self.original_term
@@ -46,7 +46,7 @@ class TermAnnotation:
 
 @dataclass
 class PostProcessingResult:
-    """Result of post-processing operation"""
+    """Result of post-processing operation."""
 
     processed_text: str
     success: bool = True
@@ -57,7 +57,7 @@ class PostProcessingResult:
 
 
 class PostProcessor:
-    """Post-process translated text with term annotations and formatting"""
+    """Post-process translated text with term annotations and formatting."""
 
     def __init__(self, config: PostProcessorConfig):
         self.config = config
@@ -65,7 +65,7 @@ class PostProcessor:
 
     def process(self, translated_text: str,
                term_translations: Dict[str, str]) -> PostProcessingResult:
-        """Process translated text with term annotations"""
+        """Process translated text with term annotations."""
         if translated_text is None:
             return PostProcessingResult(
                 processed_text="",
@@ -109,7 +109,7 @@ class PostProcessor:
 
     def process_with_terms(self, translated_text: str,
                           terms: List[Term]) -> PostProcessingResult:
-        """Process translated text using Term objects"""
+        """Process translated text using Term objects."""
         # Convert Term objects to translation dictionary
         term_translations = {}
         for term in terms:
@@ -122,7 +122,7 @@ class PostProcessor:
 
     def _add_source_term_annotations(self, text: str,
                                    term_translations: Dict[str, str]) -> Tuple[str, int]:
-        """Add source term annotations to translated text"""
+        """Add source term annotations to translated text."""
         annotations_added = 0
         processed_text = text
 
@@ -154,10 +154,14 @@ class PostProcessor:
 
         return processed_text, annotations_added
 
-    def _annotate_term_with_positions(self, text: str, original_term: str,
-                                    translated_term: str,
-                                    annotated_positions: Set[Tuple[int, int]]) -> Tuple[str, int, Set[Tuple[int, int]]]:
-        """Annotate a specific term in the text, avoiding overlaps"""
+    def _annotate_term_with_positions(
+        self,
+        text: str,
+        original_term: str,
+        translated_term: str,
+        annotated_positions: Set[Tuple[int, int]],
+    ) -> Tuple[str, int, Set[Tuple[int, int]]]:
+        """Annotate a specific term in the text, avoiding overlaps."""
         if not translated_term or translated_term.strip() == "":
             return text, 0, set()
 
@@ -188,7 +192,9 @@ class PostProcessor:
                 new_text = before + annotation + after
 
                 # Update annotation count
-                self._annotation_count[original_term] = self._annotation_count.get(original_term, 0) + 1
+                self._annotation_count[original_term] = (
+                    self._annotation_count.get(original_term, 0) + 1
+                )
 
                 # Calculate new position after annotation
                 new_positions = {(start, start + len(annotation))}
@@ -199,7 +205,7 @@ class PostProcessor:
 
     def _annotate_term(self, text: str, original_term: str,
                       translated_term: str) -> Tuple[str, int]:
-        """Annotate a specific term in the text"""
+        """Annotate a specific term in the text."""
         if not translated_term or translated_term.strip() == "":
             return text, 0
 
@@ -227,14 +233,16 @@ class PostProcessor:
                 new_text = before + annotation + after
 
                 # Update annotation count
-                self._annotation_count[original_term] = self._annotation_count.get(original_term, 0) + 1
+                self._annotation_count[original_term] = (
+                    self._annotation_count.get(original_term, 0) + 1
+                )
 
                 return new_text, 1
 
         return text, 0
 
     def _adjust_spacing(self, text: str) -> str:
-        """Adjust spacing between Japanese and English text"""
+        """Adjust spacing between Japanese and English text."""
         # Add space between Japanese and English characters
         # This is a basic implementation
 
@@ -261,7 +269,7 @@ class PostProcessor:
         return text
 
     def _preserve_formatting(self, text: str) -> str:
-        """Preserve original formatting like line breaks"""
+        """Preserve original formatting like line breaks."""
         # This is mainly to ensure we don't accidentally remove formatting
         # Most formatting should already be preserved by the processing logic
 
@@ -274,23 +282,25 @@ class PostProcessor:
         return text
 
     def get_annotation_stats(self) -> Dict[str, int]:
-        """Get statistics about annotations made"""
+        """Get statistics about annotations made."""
         return dict(self._annotation_count)
 
     def reset_annotations(self):
-        """Reset annotation counting for new processing session"""
+        """Reset annotation counting for new processing session."""
         self._annotation_count.clear()
 
 
 class BatchPostProcessor:
-    """Process multiple texts in batch"""
+    """Process multiple texts in batch."""
 
     def __init__(self, config: PostProcessorConfig):
         self.config = config
         self.processor = PostProcessor(config)
 
-    def process_batch(self, texts_and_terms: List[Tuple[str, Dict[str, str]]]) -> List[PostProcessingResult]:
-        """Process multiple texts with their respective term dictionaries"""
+    def process_batch(
+        self, texts_and_terms: List[Tuple[str, Dict[str, str]]]
+    ) -> List[PostProcessingResult]:
+        """Process multiple texts with their respective term dictionaries."""
         results = []
 
         for text, term_dict in texts_and_terms:
@@ -303,7 +313,7 @@ class BatchPostProcessor:
 
     def process_pages(self, pages: List[str],
                      global_terms: Dict[str, str]) -> List[PostProcessingResult]:
-        """Process multiple pages with shared global terms"""
+        """Process multiple pages with shared global terms."""
         results = []
 
         # Track global first occurrences across all pages

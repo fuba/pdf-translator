@@ -1,8 +1,5 @@
 """Tests for document rendering functionality."""
 
-import tempfile
-from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -132,10 +129,10 @@ class TestDocumentRenderer:
         """Test Markdown rendering."""
         output_path = tmp_path / "output.md"
         renderer.render(sample_document, output_path)
-        
+
         assert output_path.exists()
         content = output_path.read_text()
-        
+
         # Check content
         assert "## Page 1" in content
         assert "## Page 2" in content
@@ -147,10 +144,10 @@ class TestDocumentRenderer:
         """Test Markdown rendering with layout regions."""
         output_path = tmp_path / "output_layout.md"
         renderer.render(sample_document, output_path, layout_regions)
-        
+
         assert output_path.exists()
         content = output_path.read_text()
-        
+
         # Check structure
         assert "### これはタイトルです" in content  # Title as H3
         assert "#### 2ページ目のタイトル" in content  # Heading as H4
@@ -162,20 +159,20 @@ class TestDocumentRenderer:
         """Test HTML rendering."""
         config = RenderConfig(output_format="html")
         renderer = DocumentRenderer(config)
-        
+
         document = AnnotatedDocument(
             config=PostProcessorConfig(),
             annotated_pages={
                 0: "Title\n\nParagraph with content.",
             }
         )
-        
+
         output_path = tmp_path / "output.html"
         renderer.render(document, output_path)
-        
+
         assert output_path.exists()
         content = output_path.read_text()
-        
+
         # Check HTML structure
         assert "<!DOCTYPE html>" in content
         assert "<html" in content
@@ -189,15 +186,15 @@ class TestDocumentRenderer:
         """Test HTML rendering without style."""
         config = RenderConfig(output_format="html", include_style=False)
         renderer = DocumentRenderer(config)
-        
+
         document = AnnotatedDocument(
             config=PostProcessorConfig(),
             annotated_pages={0: "Content"}
         )
-        
+
         output_path = tmp_path / "output_no_style.html"
         renderer.render(document, output_path)
-        
+
         content = output_path.read_text()
         assert "<style>" not in content
 
@@ -205,7 +202,7 @@ class TestDocumentRenderer:
         """Test rendering with unsupported format."""
         renderer.config.output_format = "pdf"
         output_path = tmp_path / "output.pdf"
-        
+
         with pytest.raises(ValueError, match="Unsupported output format"):
             renderer.render(sample_document, output_path)
 
@@ -223,14 +220,14 @@ class TestDocumentRenderer:
                 raw_text="Title\nContent",
             )
         ]
-        
+
         translated_texts = {
             0: "タイトル\n\n内容です。"
         }
-        
+
         output_path = tmp_path / "from_pages.md"
         renderer.render_from_pages(pages, translated_texts, output_path)
-        
+
         assert output_path.exists()
         content = output_path.read_text()
         assert "タイトル" in content
@@ -240,7 +237,7 @@ class TestDocumentRenderer:
         """Test HTML escaping."""
         text = 'Test <tag> & "quotes" \'apostrophe\''
         escaped = renderer._escape_html(text)
-        
+
         assert '&lt;' in str(escaped)
         assert '&gt;' in str(escaped)
         assert '&amp;' in str(escaped)
@@ -260,7 +257,7 @@ class TestDocumentRenderer:
         """Test rendering with page breaks."""
         output_path = tmp_path / "with_breaks.md"
         renderer.render(sample_document, output_path)
-        
+
         content = output_path.read_text()
         assert "---" in content  # Markdown page break
 
@@ -268,10 +265,10 @@ class TestDocumentRenderer:
         """Test rendering without page breaks."""
         config = RenderConfig(page_breaks=False)
         renderer = DocumentRenderer(config)
-        
+
         output_path = tmp_path / "no_breaks.md"
         renderer.render(sample_document, output_path)
-        
+
         content = output_path.read_text()
         assert "---" not in content
 
@@ -288,15 +285,15 @@ class TestDocumentRenderer:
                 ),
             ]
         }
-        
+
         document = AnnotatedDocument(
             config=PostProcessorConfig(),
             annotated_pages={0: "Table content"}
         )
-        
+
         output_path = tmp_path / "table.md"
         renderer.render(document, output_path, regions)
-        
+
         content = output_path.read_text()
         assert "```" in content  # Code block for table
         assert "Column1\tColumn2" in content
@@ -314,15 +311,15 @@ class TestDocumentRenderer:
                 ),
             ]
         }
-        
+
         document = AnnotatedDocument(
             config=PostProcessorConfig(),
             annotated_pages={0: "Figure content"}
         )
-        
+
         output_path = tmp_path / "figure.md"
         renderer.render(document, output_path, regions)
-        
+
         content = output_path.read_text()
         assert "**[Figure]**" in content
         assert "Figure 1: Sample diagram" in content
@@ -331,6 +328,6 @@ class TestDocumentRenderer:
         """Test that output directory is created if it doesn't exist."""
         output_path = tmp_path / "nested" / "dir" / "output.md"
         renderer.render(sample_document, output_path)
-        
+
         assert output_path.exists()
         assert output_path.parent.exists()

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Test Japanese text extraction from PDF files"""
+"""Test Japanese text extraction from PDF files."""
 
 from pathlib import Path
 
@@ -7,7 +7,7 @@ from src.extractor import PDFExtractor
 
 
 def test_pdf_extraction(pdf_path: Path):
-    """Test PDF text extraction and display results"""
+    """Test PDF text extraction and display results."""
     print(f"\n{'='*60}")
     print(f"Testing: {pdf_path.name}")
     print('='*60)
@@ -38,7 +38,7 @@ def test_pdf_extraction(pdf_path: Path):
 
 
 def main():
-    """Test all sample PDFs"""
+    """Test all sample PDFs."""
     samples_dir = Path("tests/fixtures")
 
     # Test each PDF file

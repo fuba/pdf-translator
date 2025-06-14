@@ -1,4 +1,4 @@
-"""Tests for translator module"""
+"""Tests for translator module."""
 from unittest.mock import Mock, patch
 
 import pytest
@@ -14,7 +14,7 @@ from src.translator import (
 
 class TestTranslatorConfig:
     def test_from_dict(self):
-        """Test creating config from dictionary"""
+        """Test creating config from dictionary."""
         config_dict = {
             "engine": "ollama",
             "model": "gemma3:12b",
@@ -31,7 +31,7 @@ class TestTranslatorConfig:
         assert config.max_tokens == 4096
 
     def test_default_values(self):
-        """Test default configuration values"""
+        """Test default configuration values."""
         config = TranslatorConfig()
 
         assert config.engine == "ollama"
@@ -41,7 +41,7 @@ class TestTranslatorConfig:
 
 class TestBaseTranslator:
     def test_system_prompt(self):
-        """Test system prompt generation"""
+        """Test system prompt generation."""
         config = TranslatorConfig()
         # Use OllamaTranslator to test BaseTranslator methods
         translator = OllamaTranslator(config)
@@ -58,7 +58,7 @@ class TestBaseTranslator:
         assert "technical terms" in prompt.lower()
 
     def test_prepare_text(self):
-        """Test text preparation for translation"""
+        """Test text preparation for translation."""
         config = TranslatorConfig()
         # Use OllamaTranslator to test BaseTranslator methods
         translator = OllamaTranslator(config)
@@ -72,7 +72,7 @@ class TestBaseTranslator:
 class TestOllamaTranslator:
     @patch('requests.post')
     def test_translate_success(self, mock_post):
-        """Test successful translation with Ollama"""
+        """Test successful translation with Ollama."""
         # Mock response
         mock_response = Mock()
         mock_response.status_code = 200
@@ -112,7 +112,7 @@ class TestOllamaTranslator:
 
     @patch('requests.post')
     def test_translate_failure(self, mock_post):
-        """Test translation failure handling"""
+        """Test translation failure handling."""
         mock_post.side_effect = Exception("Connection error")
 
         config = TranslatorConfig(engine="ollama")
@@ -130,7 +130,7 @@ class TestOllamaTranslator:
 
     @patch('requests.post')
     def test_batch_translate(self, mock_post):
-        """Test batch translation"""
+        """Test batch translation."""
         # Mock responses
         mock_response = Mock()
         mock_response.status_code = 200
@@ -159,7 +159,7 @@ class TestOllamaTranslator:
 class TestOpenAITranslator:
     @patch('openai.ChatCompletion.create')
     def test_translate_success(self, mock_create):
-        """Test successful translation with OpenAI"""
+        """Test successful translation with OpenAI."""
         # Mock response
         mock_create.return_value = {
             "choices": [{
@@ -194,14 +194,14 @@ class TestOpenAITranslator:
 
 class TestTranslatorFactory:
     def test_create_ollama_translator(self):
-        """Test creating Ollama translator"""
+        """Test creating Ollama translator."""
         config = TranslatorConfig(engine="ollama")
         translator = TranslatorFactory.create(config)
 
         assert isinstance(translator, OllamaTranslator)
 
     def test_create_openai_translator(self):
-        """Test creating OpenAI translator"""
+        """Test creating OpenAI translator."""
         config = TranslatorConfig(
             engine="openai",
             api_key="test-key"
@@ -211,7 +211,7 @@ class TestTranslatorFactory:
         assert isinstance(translator, OpenAITranslator)
 
     def test_invalid_engine(self):
-        """Test invalid engine raises error"""
+        """Test invalid engine raises error."""
         config = TranslatorConfig(engine="invalid")
 
         with pytest.raises(ValueError, match="Unsupported translator engine"):
@@ -220,7 +220,7 @@ class TestTranslatorFactory:
 
 class TestTranslationResult:
     def test_result_creation(self):
-        """Test TranslationResult creation"""
+        """Test TranslationResult creation."""
         result = TranslationResult(
             translated_text="これはテストです。",
             source_lang="en",
@@ -236,7 +236,7 @@ class TestTranslationResult:
         assert result.metadata["model"] == "gemma3:12b"
 
     def test_failed_result(self):
-        """Test failed translation result"""
+        """Test failed translation result."""
         result = TranslationResult(
             translated_text="",
             source_lang="en",

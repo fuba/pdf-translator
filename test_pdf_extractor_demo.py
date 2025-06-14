@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Demo script to test PDF extractor with a sample document"""
+"""Demo script to test PDF extractor with a sample document."""
 
 import tempfile
 from pathlib import Path
@@ -13,7 +13,7 @@ from src.extractor import PDFExtractor
 
 
 def create_sample_pdf() -> Path:
-    """Create a more comprehensive sample PDF for testing"""
+    """Create a more comprehensive sample PDF for testing."""
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_file:
         pdf_path = Path(tmp_file.name)
 
@@ -64,7 +64,7 @@ def create_sample_pdf() -> Path:
 
 
 def main():
-    """Main demo function"""
+    """Run the main demo function."""
     console = Console()
 
     console.print(Panel.fit("PDF Extractor Demo", style="bold blue"))

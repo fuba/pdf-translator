@@ -1,4 +1,4 @@
-"""Translator module for PDF translation"""
+"""Translator module for PDF translation."""
 from .translator import (
     BaseTranslator,
     OllamaTranslator,

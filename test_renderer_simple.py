@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 def main():
     """Test simple rendering."""
-    
     # Create sample annotated document
     config = PostProcessorConfig()
     document = AnnotatedDocument(
@@ -24,7 +23,7 @@ def main():
         },
         title="PDF Translation System Demo"
     )
-    
+
     # Render to Markdown
     logger.info("Rendering to Markdown...")
     md_config = RenderConfig(output_format="markdown")
@@ -32,14 +31,14 @@ def main():
     md_output = Path("output/simple_demo.md")
     md_renderer.render(document, md_output)
     logger.info(f"Saved to: {md_output}")
-    
+
     # Show output
     if md_output.exists():
         content = md_output.read_text()
         logger.info("\nMarkdown output:")
         logger.info("-" * 60)
         logger.info(content)
-    
+
     # Render to HTML
     logger.info("\nRendering to HTML...")
     html_config = RenderConfig(output_format="html")
@@ -47,7 +46,7 @@ def main():
     html_output = Path("output/simple_demo.html")
     html_renderer.render(document, html_output)
     logger.info(f"Saved to: {html_output}")
-    
+
     logger.info("\nDemo completed!")
 
 

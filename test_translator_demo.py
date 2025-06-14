@@ -1,4 +1,4 @@
-"""Demo script to test translator functionality"""
+"""Demo script to test translator functionality."""
 import logging
 from pathlib import Path
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_ollama_connection():
-    """Test Ollama server connection"""
+    """Test Ollama server connection."""
     print("\n=== Testing Ollama Connection ===")
     config = TranslatorConfig(engine="ollama")
     translator = OllamaTranslator(config)
@@ -39,7 +39,7 @@ def test_ollama_connection():
 
 
 def test_translation():
-    """Test actual translation"""
+    """Test actual translation."""
     print("\n=== Testing Translation ===")
 
     # Load config
@@ -78,7 +78,7 @@ def test_translation():
 
 
 def test_batch_translation():
-    """Test batch translation"""
+    """Test batch translation."""
     print("\n=== Testing Batch Translation ===")
 
     config = TranslatorConfig(engine="ollama")
@@ -103,7 +103,7 @@ def test_batch_translation():
 
 
 def main():
-    """Run all tests"""
+    """Run all tests."""
     print("PDF Translation System - Translator Module Demo")
     print("=" * 50)
 
