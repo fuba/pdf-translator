@@ -9,7 +9,7 @@ A PDF translation system that preserves layout while translating documents up to
 - **OCR Capability**: Handles both text and image PDFs with PaddleOCR
 - **Technical Term Mining**: Automatically extracts and provides translations for technical terms
 - **Multiple Output Formats**: Generates HTML or Markdown with preserved layout
-- **Term Annotation**: Shows technical terms as "3���	" on first occurrence
+- **Term Annotation**: Shows technical terms as "訳語（原語）" on first occurrence
 - **Free & Open Source**: Prioritizes free tools with OpenAI as optional fallback
 
 ## Architecture
@@ -19,11 +19,13 @@ flowchart LR
     PDF[Input PDF]
     A[Text Extraction & Layout Analysis]
     B[Technical Term Extraction & Translation Lookup]
-    C[LLM Translation (Gemma 3 via Ollama)]
+    C[LLM Translation - Gemma 3 via Ollama]
     D[Post-processing: Term Annotation & Spacing Adjustment]
     E[Layout Reconstruction & Output Generation]
+    F[Translated Result - HTML/Markdown]
+    
     PDF --> A --> B
-    B --> C --> D --> E[Translated Result (HTML/Markdown)]
+    B --> C --> D --> E --> F
     A --> C
     A --> E
 ```
@@ -175,7 +177,7 @@ make check            # Run all checks (lint, type-check, test)
 
 - Maximum 50 pages per PDF
 - Figures and tables are preserved as-is (not translated)
-- Technical terms are annotated in Japanese style: "3���	"
+- Technical terms are annotated in Japanese style: "訳語（原語）"
 - Page breaks must be preserved (no text crossing pages)
 
 ## Contributing
