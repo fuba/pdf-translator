@@ -1,7 +1,7 @@
 """Tests for term_miner module."""
 from unittest.mock import Mock, patch
 
-from src.term_miner import Term, TermExtractionResult, TermMiner, TermMinerConfig, WikipediaLookup
+from pdf_translator.term_miner import Term, TermExtractionResult, TermMiner, TermMinerConfig, WikipediaLookup
 
 
 class TestTermMinerConfig:

@@ -2,7 +2,7 @@
 
 translator:
   engine: ollama              # ollama / openai
-  model: gemma3:12b          # Ollama model name
+  model: gemma3:4b           # Ollama model name
   openai_model: gpt-3.5-turbo # Model to use when engine=openai
   api_key: ""                 # OpenAI API key (if using OpenAI)
   base_url: "http://localhost:11434/api"  # Ollama API endpoint

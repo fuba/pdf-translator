@@ -2,8 +2,8 @@
 
 from unittest.mock import patch
 
-from src.extractor.pdf_extractor import PageInfo, TextBlock
-from src.layout_analyzer import (
+from pdf_translator.extractor.pdf_extractor import PageInfo, TextBlock
+from pdf_translator.layout_analyzer import (
     LayoutAnalysisResult,
     LayoutAnalyzer,
     LayoutAnalyzerConfig,
@@ -332,7 +332,7 @@ class TestLayoutAnalyzer:
         assert title_texts == {1: ["Title 1"]}
         assert para_texts == {1: ["Para 1"]}
 
-    @patch('src.layout_analyzer.layout_analyzer.logger')
+    @patch('pdf_translator.layout_analyzer.layout_analyzer.logger')
     def test_analyze_page_layout_exception_handling(self, mock_logger):
         """Test exception handling in page layout analysis."""
         analyzer = LayoutAnalyzer()

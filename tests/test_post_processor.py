@@ -1,12 +1,12 @@
 """Tests for post_processor module."""
 
-from src.post_processor import (
+from pdf_translator.post_processor import (
     PostProcessingResult,
     PostProcessor,
     PostProcessorConfig,
     TermAnnotation,
 )
-from src.term_miner import Term
+from pdf_translator.term_miner import Term
 
 
 class TestPostProcessorConfig:

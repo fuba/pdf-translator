@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.translator import (
+from pdf_translator.translator import (
     OllamaTranslator,
     OpenAITranslator,
     TranslationResult,

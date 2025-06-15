@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from src.extractor import PageInfo, PDFExtractor, TextBlock
+from pdf_translator.extractor import PageInfo, PDFExtractor, TextBlock
 
 
 class TestPDFExtractor:

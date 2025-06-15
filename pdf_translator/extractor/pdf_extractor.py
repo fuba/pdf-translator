@@ -7,6 +7,10 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import fitz  # PyMuPDF  # type: ignore
 
+from pdf_translator.config.manager import ConfigManager
+from pdf_translator.models.document import Document
+from pdf_translator.models.page import Page, TextBlock as ModelTextBlock, Image
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,16 +41,18 @@ class PageInfo:
 class PDFExtractor:
     """Extract text and structure from PDF files using PyMuPDF."""
 
-    def __init__(self, max_pages: int = 50, use_ocr: bool = True):
+    def __init__(self, config: Optional[ConfigManager] = None, max_pages: int = 50, use_ocr: bool = True):
         """Initialize PDF extractor.
 
         Args:
+            config: Configuration manager
             max_pages: Maximum number of pages to process
             use_ocr: Whether to use OCR for image-based pages
 
         """
-        self.max_pages = max_pages
-        self.use_ocr = use_ocr
+        self.config = config or ConfigManager()
+        self.max_pages = config.get("extraction.max_pages", max_pages) if config else max_pages
+        self.use_ocr = config.get("extraction.enable_ocr", use_ocr) if config else use_ocr
         self._ocr_extractor: Optional[Any] = None
 
     def extract_pdf(self, pdf_path: Path) -> List[PageInfo]:
@@ -90,6 +96,59 @@ class PDFExtractor:
         except Exception as e:
             logger.error(f"Error extracting PDF: {e}")
             raise
+    
+    def extract(self, pdf_path: str, pages: Optional[List[int]] = None) -> Document:
+        """Extract PDF content and return Document object.
+        
+        Args:
+            pdf_path: Path to PDF file
+            pages: Optional list of page numbers to extract (1-indexed)
+            
+        Returns:
+            Document object with extracted content
+        """
+        # Extract all pages first
+        page_infos = self.extract_pdf(Path(pdf_path))
+        
+        # Filter pages if specified
+        if pages:
+            page_infos = [p for p in page_infos if p.page_num + 1 in pages]
+        
+        # Convert to Document model
+        doc_pages = []
+        for page_info in page_infos:
+            # Convert text blocks
+            text_blocks = []
+            for block in page_info.text_blocks:
+                x0, y0, x1, y1 = block.bbox
+                text_blocks.append(ModelTextBlock(
+                    text=block.text,
+                    x=x0,
+                    y=y0,
+                    width=x1 - x0,
+                    height=y1 - y0,
+                    font_size=block.font_size,
+                    font_name=block.font_name
+                ))
+            
+            # Create page
+            page = Page(
+                number=page_info.page_num + 1,  # Convert to 1-indexed
+                width=page_info.width,
+                height=page_info.height,
+                text_blocks=text_blocks,
+                images=[]  # TODO: Extract images if needed
+            )
+            doc_pages.append(page)
+        
+        # Create document
+        return Document(
+            pages=doc_pages,
+            metadata={
+                "source": str(pdf_path),
+                "page_count": len(doc_pages)
+            }
+        )
 
     def _extract_page(self, page: fitz.Page, page_num: int) -> PageInfo:
         """Extract text and structure from a single page.

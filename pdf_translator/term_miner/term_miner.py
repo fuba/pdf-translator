@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 import requests
+from pdf_translator.config.manager import ConfigManager
 
 # spaCy import with error handling
 try:
@@ -164,10 +165,11 @@ class WikipediaLookup:
 class TermMiner:
     """Extract and manage technical terms from text."""
 
-    def __init__(self, config: TermMinerConfig):
-        self.config = config
+    def __init__(self, config: Optional[ConfigManager] = None):
+        self.config = config or ConfigManager()
+        self.miner_config = TermMinerConfig()
         self.nlp_models = {}
-        self.wikipedia = WikipediaLookup() if config.wikipedia_lookup else None
+        self.wikipedia = WikipediaLookup() if self.miner_config.wikipedia_lookup else None
 
         if not HAS_SPACY:
             logger.warning("spaCy not available. Term extraction will be limited.")
@@ -180,7 +182,7 @@ class TermMiner:
         if language in self.nlp_models:
             return self.nlp_models[language]
 
-        model_name = self.config.spacy_models.get(language)
+        model_name = self.miner_config.spacy_models.get(language)
         if not model_name:
             logger.warning(f"No spaCy model configured for language: {language}")
             return None
@@ -195,7 +197,7 @@ class TermMiner:
 
     def extract_terms(self, text: str, source_lang: str = "en") -> TermExtractionResult:
         """Extract terms from text."""
-        if not self.config.enabled:
+        if not self.miner_config.enabled:
             return TermExtractionResult(terms=[], success=True)
 
         try:
@@ -230,14 +232,14 @@ class TermMiner:
 
             # Filter by frequency
             original_count = len(terms)
-            terms = self._filter_terms_by_frequency(terms, self.config.min_frequency)
+            terms = self._filter_terms_by_frequency(terms, self.miner_config.min_frequency)
             filtered_count = len(terms)
 
             # Limit number of terms
-            terms = self._limit_terms(terms, self.config.max_terms)
+            terms = self._limit_terms(terms, self.miner_config.max_terms)
 
             # Add translations if enabled
-            if self.config.wikipedia_lookup and self.wikipedia:
+            if self.miner_config.wikipedia_lookup and self.wikipedia:
                 terms = self._add_translations(terms, source_lang)
 
             return TermExtractionResult(
@@ -271,8 +273,8 @@ class TermMiner:
 
             # Count frequencies
             terms = self._count_frequencies(terms)
-            terms = self._filter_terms_by_frequency(terms, self.config.min_frequency)
-            terms = self._limit_terms(terms, self.config.max_terms)
+            terms = self._filter_terms_by_frequency(terms, self.miner_config.min_frequency)
+            terms = self._limit_terms(terms, self.miner_config.max_terms)
 
             return TermExtractionResult(
                 terms=terms,

@@ -9,12 +9,15 @@ PDF自動翻訳ソフトウェア - A PDF translation system that preserves layo
 ## Key Architecture Components
 
 ### Module Structure
-- **extractor**: PDF text extraction & OCR (PyMuPDF, PaddleOCR)
-- **layout_analyzer**: Layout detection for columns, tables, figures (LayoutLM, DiT)
-- **term_miner**: Technical term extraction & translation lookup (spaCy, Wikipedia API)
-- **translator**: LLM integration for translation (Ollama/OpenAI)
-- **post_processor**: Source term annotation & spacing adjustment
-- **renderer**: HTML/Markdown output generation (Jinja2, Markdown-it-py)
+- **pdf_translator/extractor**: PDF text extraction & OCR (PyMuPDF, PaddleOCR)
+- **pdf_translator/layout_analyzer**: Layout detection for columns, tables, figures (LayoutLM, DiT)
+- **pdf_translator/term_miner**: Technical term extraction & translation lookup (spaCy, Wikipedia API)
+- **pdf_translator/translator**: LLM integration for translation (Ollama/OpenAI)
+- **pdf_translator/post_processor**: Source term annotation & spacing adjustment
+- **pdf_translator/renderer**: HTML/Markdown output generation (Jinja2, Markdown-it-py)
+- **pdf_translator/core**: Main translation pipeline integration
+- **pdf_translator/config**: Unified configuration management with .env support
+- **main.py**: CLI application entry point
 
 ### Translation Flow
 1. Extract text with coordinates from PDF
@@ -51,16 +54,37 @@ make clean            # Remove cache and temporary files
 
 # Quick test
 make test-translate   # Test translation with sample PDF
+# Or manually:
+python main.py tests/fixtures/sample_english.pdf --dry-run
 ```
 
 ## Configuration
 
-The system uses `config.yml` for settings:
-- Translation engine: ollama (default) or openai
-- Model selection for each engine
-- Language settings (source: auto, target: ja)
-- Layout preservation options
-- Output format (markdown/html)
+The system supports multiple configuration methods with precedence:
+
+1. **Environment Variables (.env file)**:
+   ```bash
+   OLLAMA_API_URL=http://server:11434/api
+   OLLAMA_MODEL=gemma3:12b
+   OLLAMA_TIMEOUT=120
+   OPENAI_API_KEY=your-key
+   ```
+
+2. **Command Line Arguments**:
+   ```bash
+   python main.py input.pdf --engine openai --format html --pages 1-10
+   ```
+
+3. **Configuration File** (`config/config.yml`):
+   ```yaml
+   translator:
+     engine: ollama
+     model: gemma3:12b
+     base_url: "http://localhost:11434/api"
+   source_language: auto
+   target_language: ja
+   output_format: markdown
+   ```
 
 ## Important Constraints
 

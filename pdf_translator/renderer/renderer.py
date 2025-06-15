@@ -8,8 +8,9 @@ from typing import Any, Dict, List, Optional
 import jinja2
 from markupsafe import Markup
 
-from src.extractor import PageInfo
-from src.layout_analyzer import LayoutRegion, RegionType
+from pdf_translator.extractor import PageInfo
+from pdf_translator.layout_analyzer import LayoutRegion, RegionType
+from pdf_translator.config.manager import ConfigManager
 
 logger = logging.getLogger(__name__)
 
@@ -47,14 +48,15 @@ class RenderConfig:
 class DocumentRenderer:
     """Render translated documents to various output formats."""
 
-    def __init__(self, config: Optional[RenderConfig] = None):
+    def __init__(self, config: Optional[ConfigManager] = None):
         """Initialize document renderer.
 
         Args:
-            config: Rendering configuration
+            config: ConfigManager instance
 
         """
-        self.config = config or RenderConfig()
+        self.config = config or ConfigManager()
+        self.render_config = RenderConfig()
 
         # Setup Jinja2 environment for HTML templates
         self.jinja_env = jinja2.Environment(
@@ -205,12 +207,12 @@ class DocumentRenderer:
             layout_regions: Optional layout regions for structure preservation
 
         """
-        if self.config.output_format == "markdown":
+        if self.render_config.output_format == "markdown":
             content = self._render_markdown(document, layout_regions)
-        elif self.config.output_format == "html":
+        elif self.render_config.output_format == "html":
             content = self._render_html(document, layout_regions)
         else:
-            raise ValueError(f"Unsupported output format: {self.config.output_format}")
+            raise ValueError(f"Unsupported output format: {self.render_config.output_format}")
 
         # Write output
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -243,7 +245,7 @@ class DocumentRenderer:
         # Process each page
         for page_num, page_text in document.annotated_pages.items():
             # Add page separator
-            if self.config.page_breaks and page_num > 0:
+            if self.render_config.page_breaks and page_num > 0:
                 lines.append("---")
                 lines.append("")
 
@@ -382,8 +384,8 @@ class DocumentRenderer:
             title=getattr(document, 'title', 'Translated Document'),
             target_lang=target_lang,
             pages=pages_data,
-            include_style=self.config.include_style,
-            page_breaks=self.config.page_breaks,
+            include_style=self.render_config.include_style,
+            page_breaks=self.render_config.page_breaks,
         )
 
     def _get_block_type(self, region_type: RegionType) -> str:

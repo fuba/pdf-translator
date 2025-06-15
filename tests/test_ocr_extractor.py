@@ -7,8 +7,8 @@ import fitz
 import pytest
 from PIL import Image, ImageDraw, ImageFont
 
-from src.extractor.ocr_extractor import OCRConfig, OCRExtractor
-from src.extractor.pdf_extractor import PageInfo
+from pdf_translator.extractor.ocr_extractor import OCRConfig, OCRExtractor
+from pdf_translator.extractor.pdf_extractor import PageInfo
 
 
 class TestOCRConfig:
@@ -90,7 +90,7 @@ class TestOCRExtractor:
         assert extractor.config.lang == "japan"
         assert extractor.config.use_gpu is True
 
-    @patch("src.extractor.ocr_extractor.PaddleOCR")
+    @patch("pdf_translator.extractor.ocr_extractor.PaddleOCR")
     def test_get_ocr_lazy_loading(self, mock_paddle_ocr, ocr_extractor):
         """Test lazy loading of PaddleOCR instance."""
         mock_ocr_instance = MagicMock()
@@ -131,7 +131,7 @@ class TestOCRExtractor:
 
         doc.close()
 
-    @patch("src.extractor.ocr_extractor.PaddleOCR")
+    @patch("pdf_translator.extractor.ocr_extractor.PaddleOCR")
     def test_extract_page_ocr(self, mock_paddle_ocr, ocr_extractor, image_pdf):
         """Test OCR extraction from a single page."""
         # Mock OCR results
@@ -166,7 +166,7 @@ class TestOCRExtractor:
 
         doc.close()
 
-    @patch("src.extractor.ocr_extractor.PaddleOCR")
+    @patch("pdf_translator.extractor.ocr_extractor.PaddleOCR")
     def test_extract_pdf_with_ocr(self, mock_paddle_ocr, ocr_extractor, image_pdf):
         """Test full PDF extraction with OCR."""
         # Mock OCR results
@@ -201,7 +201,7 @@ class TestOCRExtractor:
         with pytest.raises(ValueError, match="maximum allowed is 50"):
             ocr_extractor.extract_pdf_with_ocr(pdf_path)
 
-    @patch("src.extractor.ocr_extractor.PaddleOCR")
+    @patch("pdf_translator.extractor.ocr_extractor.PaddleOCR")
     def test_extract_mixed_pdf(self, mock_paddle_ocr, ocr_extractor, tmp_path):
         """Test extraction of PDF with mixed text and image pages."""
         # Create mixed PDF

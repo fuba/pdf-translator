@@ -72,19 +72,32 @@ ollama pull gemma3:12b
 
 ### 2. Configuration
 
-Copy and modify the configuration file:
+The system supports three configuration methods (in priority order):
+
+#### 2.1 Environment Variables (.env file)
+
+Create a `.env` file for local settings (not committed to git):
 
 ```bash
-cp config/config.yml config/config.yml.local
+# .env file (optional, for local settings)
+OLLAMA_API_URL=http://localhost:11434/api
+OLLAMA_MODEL=gemma3:12b
+OLLAMA_TIMEOUT=120
+OPENAI_API_KEY=your-api-key-here
 ```
 
-Key configuration options:
+#### 2.2 Configuration File
+
+The main configuration file `config/config.yml`:
 
 ```yaml
 translator:
   engine: ollama              # ollama / openai
-  model: gemma3:12b-it-q8_0   # Ollama model name
+  model: gemma3:12b          # Ollama model name
   openai_model: gpt-3.5-turbo # For engine=openai
+  base_url: "http://localhost:11434/api"  # Ollama API endpoint
+  temperature: 0.3
+  max_tokens: 4096
 
 source_language: auto
 target_language: ja
@@ -93,13 +106,41 @@ include_source_term: true
 
 output_format: markdown   # markdown / html
 max_pages: 50
+layout_analysis: true
+term_extraction:
+  enabled: true
+  min_frequency: 2
+  max_terms: 100
 ```
 
-### 3. For OpenAI API (Optional)
+#### 2.3 Command Line Arguments
 
-Set your API key:
+Override any setting via command line:
 
 ```bash
+python main.py input.pdf --engine openai --format html --pages 1-10
+```
+
+### 3. Remote Ollama Server (Optional)
+
+For better performance, you can use a remote Ollama server:
+
+```bash
+# .env file
+OLLAMA_API_URL=http://your-server:11434/api
+OLLAMA_MODEL=gemma3:12b
+OLLAMA_TIMEOUT=120
+```
+
+### 4. For OpenAI API (Optional)
+
+Set your API key in `.env` file or environment variable:
+
+```bash
+# In .env file
+OPENAI_API_KEY="your-api-key-here"
+
+# Or as environment variable
 export OPENAI_API_KEY="your-api-key-here"
 ```
 
@@ -109,38 +150,110 @@ export OPENAI_API_KEY="your-api-key-here"
 
 ```bash
 # Basic usage
-pdf-translator input.pdf
+python main.py input.pdf
 
 # Specify output format
-pdf-translator input.pdf --format html
+python main.py input.pdf --format html
 
 # Use OpenAI instead of local LLM
-pdf-translator input.pdf --engine openai
+python main.py input.pdf --engine openai
 
 # Custom output path
-pdf-translator input.pdf --output translated.md
+python main.py input.pdf --output translated.md
+
+# Process specific pages only
+python main.py input.pdf --pages 1-5
+
+# Analyze PDF without translation (dry run)
+python main.py input.pdf --dry-run
+
+# Disable specific features
+python main.py input.pdf --no-terms --no-layout
+
+# Verbose logging
+python main.py input.pdf -v
+
+# Quiet mode (errors only)
+python main.py input.pdf -q
+
+# Force OCR for text PDFs
+python main.py input.pdf --ocr
+
+# Disable OCR completely
+python main.py input.pdf --no-ocr
+
+# Specify languages
+python main.py input.pdf --source-lang en --target-lang ja
+
+# Use custom configuration file
+python main.py input.pdf -c my-config.yml
+```
+
+### Available Command Line Options
+
+```
+positional arguments:
+  input                 Input PDF file path
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        Output file path (default: auto-generated)
+  -c CONFIG, --config CONFIG
+                        Configuration file path (default: config/config.yml)
+  --engine {ollama,openai}
+                        Translation engine to use
+  --model MODEL         Model name for translation
+  --format {html,markdown}
+                        Output format
+  --source-lang SOURCE_LANG
+                        Source language code (default: auto-detect)
+  --target-lang TARGET_LANG
+                        Target language code (default: ja)
+  --pages PAGES         Page range (e.g., '1-10', '1,3,5-7')
+  --ocr                 Force OCR processing
+  --no-ocr              Disable OCR processing
+  --no-terms            Disable technical term extraction
+  --no-layout           Disable layout analysis
+  -v, --verbose         Enable verbose logging
+  -q, --quiet           Suppress all output except errors
+  --dry-run             Analyze PDF without translation
+  --version             Show version number
 ```
 
 ### Python API
 
 ```python
-from src.main import PDFTranslator
+from pdf_translator.config.manager import ConfigManager
+from pdf_translator.core.pipeline import TranslationPipeline
 
-translator = PDFTranslator()
-result = translator.translate("input.pdf", output_format="markdown")
-print(result)
+# Create configuration
+config = ConfigManager()
+
+# Create pipeline
+pipeline = TranslationPipeline(config)
+
+# Analyze PDF (dry run)
+analysis = pipeline.analyze("input.pdf")
+print(f"Pages: {analysis['total_pages']}, Characters: {analysis['total_chars']}")
+
+# Translate PDF
+result = pipeline.translate("input.pdf", "output.html")
+print(f"Translation completed in {result['processing_time']:.1f}s")
 ```
 
 ## Module Overview
 
-| Module | Purpose | Key Libraries |
-|--------|---------|---------------|
-| **extractor** | PDF text extraction & OCR | PyMuPDF, PaddleOCR |
-| **layout_analyzer** | Layout detection for columns, tables, figures | LayoutLM, DiT |
-| **term_miner** | Technical term extraction & translation lookup | spaCy, Wikipedia API |
-| **translator** | LLM integration for translation | Ollama/OpenAI |
-| **post_processor** | Source term annotation & spacing adjustment | Python (regex) |
-| **renderer** | HTML/Markdown output generation | Jinja2, Markdown-it-py |
+| Module | Purpose | Key Libraries | Status |
+|--------|---------|---------------|--------|
+| **extractor** | PDF text extraction & OCR | PyMuPDF, PaddleOCR | ✅ Complete |
+| **layout_analyzer** | Layout detection for columns, tables, figures | LayoutLM, DiT | ✅ Complete |
+| **term_miner** | Technical term extraction & translation lookup | spaCy, Wikipedia API | ✅ Complete |
+| **translator** | LLM integration for translation | Ollama/OpenAI | ✅ Complete |
+| **post_processor** | Source term annotation & spacing adjustment | Python (regex) | ✅ Complete |
+| **renderer** | HTML/Markdown output generation | Jinja2, Markdown-it-py | ✅ Complete |
+| **core.pipeline** | Main integration pipeline | - | ✅ Complete |
+| **config.manager** | Unified configuration management | python-dotenv, PyYAML | ✅ Complete |
 
 ## Development
 
@@ -155,6 +268,15 @@ make dev-install      # Install all dependencies including dev tools
 ```bash
 make test             # Run all tests
 make test-translate   # Quick test with sample PDF
+
+# Or manually with UV
+./run-uv.sh run pytest tests/
+
+# Test individual components
+./run-uv.sh run python test_simple_pipeline.py
+
+# Test main CLI
+python main.py tests/fixtures/sample_english.pdf --dry-run
 ```
 
 ### Code Quality
@@ -173,12 +295,31 @@ make check            # Run all checks (lint, type-check, test)
 ./run-uv.sh run python test_setup.py
 ```
 
-## Limitations
+## Current Status & Limitations
 
+### ✅ Working Features
+- PDF text extraction (PyMuPDF) and OCR (PaddleOCR)
+- Layout analysis with fallback mode
+- Technical term extraction and Wikipedia lookup
+- Ollama/OpenAI translation integration
+- Post-processing with term annotation
+- HTML/Markdown output generation
+- Comprehensive CLI with all options
+- Configuration management with .env support
+- Remote Ollama server support
+
+### ⚠️ Current Limitations
 - Maximum 50 pages per PDF
 - Figures and tables are preserved as-is (not translated)
 - Technical terms are annotated in Japanese style: "訳語（原語）"
-- Page breaks must be preserved (no text crossing pages)
+- Large PDF processing may require timeout adjustments
+- spaCy language models need manual installation
+- Full LayoutLM/DiT integration still in development (fallback mode active)
+
+### 🔧 Known Issues
+- Timeout issues with large documents (adjust OLLAMA_TIMEOUT)
+- Memory usage optimization needed for batch processing
+- Term extraction requires spaCy model: `python -m spacy download ja_core_news_sm`
 
 ## Contributing
 

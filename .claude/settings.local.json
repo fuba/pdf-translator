@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(./run-uv.sh run:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(sed:*)",
+      "Bash(curl:*)",
+      "Bash(./run-uv.sh sync:*)"
     ]
   },
   "enableAllProjectMcpServers": false

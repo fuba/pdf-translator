@@ -3,10 +3,10 @@
 
 import pytest
 
-from src.extractor import PageInfo, TextBlock
-from src.layout_analyzer import LayoutRegion, RegionType
-from src.post_processor import PostProcessorConfig
-from src.renderer import AnnotatedDocument, DocumentRenderer, RenderConfig
+from pdf_translator.extractor import PageInfo, TextBlock
+from pdf_translator.layout_analyzer import LayoutRegion, RegionType
+from pdf_translator.post_processor import PostProcessorConfig
+from pdf_translator.renderer import AnnotatedDocument, DocumentRenderer, RenderConfig
 
 
 class TestRenderConfig:

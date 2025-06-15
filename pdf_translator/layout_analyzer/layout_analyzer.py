@@ -9,7 +9,8 @@ from typing import Dict, List, Optional, Tuple
 import torch
 from transformers import AutoProcessor
 
-from ..extractor.pdf_extractor import PageInfo, TextBlock
+from pdf_translator.extractor.pdf_extractor import PageInfo, TextBlock
+from pdf_translator.config.manager import ConfigManager
 
 logger = logging.getLogger(__name__)
 
@@ -86,14 +87,15 @@ class LayoutAnalyzerConfig:
 class LayoutAnalyzer:
     """Document layout analyzer using pre-trained models."""
 
-    def __init__(self, config: Optional[LayoutAnalyzerConfig] = None):
+    def __init__(self, config: Optional[ConfigManager] = None):
         """Initialize layout analyzer.
 
         Args:
-            config: Layout analyzer configuration
+            config: ConfigManager instance
 
         """
-        self.config = config or LayoutAnalyzerConfig()
+        self.config = config or ConfigManager()
+        self.analyzer_config = LayoutAnalyzerConfig()
         self.model = None
         self.processor = None
         self._model_loaded = False
@@ -104,13 +106,13 @@ class LayoutAnalyzer:
             return
 
         try:
-            logger.info(f"Loading layout analysis model: {self.config.model_name}")
+            logger.info(f"Loading layout analysis model: {self.analyzer_config.model_name}")
 
             # Try to load LayoutLMv3 for object detection
             # Note: This is a simplified approach - in practice, you might need
             # a specialized model fine-tuned for layout detection
             self.processor = AutoProcessor.from_pretrained(
-                self.config.model_name,
+                self.analyzer_config.model_name,
                 apply_ocr=False  # We already have text from PDFExtractor
             )
 
@@ -150,7 +152,7 @@ class LayoutAnalyzer:
 
         # Detect column layout
         column_count = (
-            self._detect_columns(page_info) if self.config.column_detection_enabled else 1
+            self._detect_columns(page_info) if self.analyzer_config.column_detection_enabled else 1
         )
 
         # Check for tables and figures

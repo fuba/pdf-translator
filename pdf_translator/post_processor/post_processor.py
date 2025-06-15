@@ -4,7 +4,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from src.term_miner import Term
+from pdf_translator.term_miner import Term
+from pdf_translator.config.manager import ConfigManager
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +60,9 @@ class PostProcessingResult:
 class PostProcessor:
     """Post-process translated text with term annotations and formatting."""
 
-    def __init__(self, config: PostProcessorConfig):
-        self.config = config
+    def __init__(self, config: Optional[ConfigManager] = None):
+        self.config = config or ConfigManager()
+        self.processor_config = PostProcessorConfig()
         self._annotation_count: Dict[str, int] = {}
 
     def process(self, translated_text: str,
@@ -81,15 +83,15 @@ class PostProcessor:
             # Reset annotation count for this processing session
             self._annotation_count.clear()
 
-            if self.config.add_source_terms and term_translations:
+            if self.processor_config.add_source_terms and term_translations:
                 processed_text, annotations_added = self._add_source_term_annotations(
                     processed_text, term_translations
                 )
 
-            if self.config.spacing_adjustment:
+            if self.processor_config.spacing_adjustment:
                 processed_text = self._adjust_spacing(processed_text)
 
-            if self.config.preserve_line_breaks:
+            if self.processor_config.preserve_line_breaks:
                 processed_text = self._preserve_formatting(processed_text)
 
             return PostProcessingResult(
@@ -113,7 +115,7 @@ class PostProcessor:
         # Convert Term objects to translation dictionary
         term_translations = {}
         for term in terms:
-            if len(term.text) >= self.config.min_term_length:
+            if len(term.text) >= self.processor_config.min_term_length:
                 # Get Japanese translation if available
                 translation = term.translations.get("ja", term.text)
                 term_translations[term.text] = translation
@@ -138,11 +140,11 @@ class PostProcessor:
 
         for original_term, translated_term in sorted_terms:
             # Skip if term is too short
-            if len(original_term) < self.config.min_term_length:
+            if len(original_term) < self.processor_config.min_term_length:
                 continue
 
             # Skip if we've already annotated this term enough times
-            if self._annotation_count.get(original_term, 0) >= self.config.max_annotations_per_term:
+            if self._annotation_count.get(original_term, 0) >= self.processor_config.max_annotations_per_term:
                 continue
 
             # Find the translated term in the text, avoiding overlaps
@@ -166,13 +168,13 @@ class PostProcessor:
             return text, 0, set()
 
         # Create the annotation
-        annotation = self.config.source_term_format.format(
+        annotation = self.processor_config.source_term_format.format(
             translation=translated_term,
             original=original_term
         )
 
         # Find and replace first occurrence only
-        pattern_flags = 0 if self.config.case_sensitive else re.IGNORECASE
+        pattern_flags = 0 if self.processor_config.case_sensitive else re.IGNORECASE
         search_pattern = re.escape(translated_term)
 
         # Find the first occurrence that doesn't overlap with existing annotations
@@ -210,13 +212,13 @@ class PostProcessor:
             return text, 0
 
         # Create the annotation
-        annotation = self.config.source_term_format.format(
+        annotation = self.processor_config.source_term_format.format(
             translation=translated_term,
             original=original_term
         )
 
         # Find and replace first occurrence only
-        pattern_flags = 0 if self.config.case_sensitive else re.IGNORECASE
+        pattern_flags = 0 if self.processor_config.case_sensitive else re.IGNORECASE
 
         # Use word boundaries to avoid partial matches
         # But be careful with Japanese text which doesn't use spaces
@@ -293,8 +295,8 @@ class PostProcessor:
 class BatchPostProcessor:
     """Process multiple texts in batch."""
 
-    def __init__(self, config: PostProcessorConfig):
-        self.config = config
+    def __init__(self, config: Optional[ConfigManager] = None):
+        self.config = config or ConfigManager()
         self.processor = PostProcessor(config)
 
     def process_batch(
