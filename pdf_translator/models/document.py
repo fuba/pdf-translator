@@ -35,5 +35,5 @@ class Document:
         return None
 
     def __repr__(self) -> str:
-        """String representation."""
+        """Return string representation."""
         return f"Document(pages={self.page_count}, has_text={self.has_text})"

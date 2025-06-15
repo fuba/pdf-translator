@@ -12,7 +12,7 @@ from typing import Optional
 def setup_logging(
     level: int = logging.INFO, log_file: Optional[str] = None, format_string: Optional[str] = None
 ) -> None:
-    """Setup logging configuration for the application.
+    """Set up logging configuration for the application.
 
     Args:
         level: Logging level (default: INFO)

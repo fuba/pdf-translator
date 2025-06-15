@@ -126,5 +126,5 @@ class ConfigManager:
         return TranslatorConfig.from_dict(translator_config)
 
     def __repr__(self) -> str:
-        """String representation."""
+        """Return string representation."""
         return f"ConfigManager(path='{self.config_path}')"

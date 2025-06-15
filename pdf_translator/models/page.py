@@ -92,7 +92,7 @@ class Page:
         self.regions.append(region)
 
     def __repr__(self) -> str:
-        """String representation."""
+        """Return string representation."""
         return (
             f"Page(number={self.number}, "
             f"text_blocks={len(self.text_blocks)}, "

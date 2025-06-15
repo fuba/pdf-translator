@@ -58,7 +58,7 @@ class Region:
         return not (x1_max < x2_min or x2_max < x1_min or y1_max < y2_min or y2_max < y1_min)
 
     def __repr__(self) -> str:
-        """String representation."""
+        """Return string representation."""
         return (
             f"Region(type={self.type.value}, "
             f"bounds=({self.x:.1f}, {self.y:.1f}, "
