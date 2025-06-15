@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-PDF Translation System - Main CLI Application
+"""PDF Translation System - Main CLI Application.
 
 A complete PDF translation system that preserves layout while translating documents.
 """
@@ -9,7 +8,6 @@ import argparse
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
 
 from pdf_translator.config.manager import ConfigManager
 from pdf_translator.core.pipeline import TranslationPipeline
@@ -166,28 +164,28 @@ def validate_input(args: argparse.Namespace) -> None:
     input_path = Path(args.input)
     if not input_path.exists():
         raise FileNotFoundError(f"Input file not found: {args.input}")
-    
+
     if not input_path.suffix.lower() == ".pdf":
         raise ValueError(f"Input file must be a PDF: {args.input}")
-    
+
     # Check config file exists
     config_path = Path(args.config)
     if not config_path.exists():
         raise FileNotFoundError(f"Configuration file not found: {args.config}")
-    
+
     # Validate page range if specified
     if args.pages:
         try:
             parse_page_range(args.pages)
         except ValueError as e:
-            raise ValueError(f"Invalid page range: {e}")
+            raise ValueError(f"Invalid page range: {e}") from e
 
 
 def parse_page_range(page_range: str) -> list[int]:
     """Parse page range string into list of page numbers."""
     pages = []
     parts = page_range.split(',')
-    
+
     for part in parts:
         part = part.strip()
         if '-' in part:
@@ -199,48 +197,49 @@ def parse_page_range(page_range: str) -> list[int]:
             pages.extend(range(start, end + 1))
         else:
             pages.append(int(part))
-    
+
     return sorted(set(pages))
 
 
-def generate_output_path(input_path: Path, format: str) -> Path:
+def generate_output_path(input_path: Path, output_format: str) -> Path:
     """Generate output file path based on input and format."""
-    suffix = ".html" if format == "html" else ".md"
+    suffix = ".html" if output_format == "html" else ".md"
     output_name = input_path.stem + "_translated" + suffix
     return input_path.parent / output_name
 
 
 def main() -> int:
-    """Main entry point."""
+    """Execute main entry point."""
     try:
         # Parse arguments
         args = parse_arguments()
-        
+
         # Validate input
         validate_input(args)
-        
+
         # Setup logging
         log_level = logging.WARNING if args.quiet else (
             logging.DEBUG if args.verbose else logging.INFO
         )
         setup_logging(level=log_level)
         logger = logging.getLogger(__name__)
-        
+
         # Load configuration
         config = ConfigManager(args.config)
-        
+
         # Override config with command line arguments
         if args.engine:
             config.set("translation.engine", args.engine)
         if args.model:
-            config.set(f"translation.{args.engine or config.get('translation.engine')}.model", args.model)
+            engine = args.engine or config.get('translation.engine')
+            config.set(f"translation.{engine}.model", args.model)
         if args.format:
             config.set("output.format", args.format)
         if args.source_lang:
             config.set("translation.source_language", args.source_lang)
         if args.target_lang:
             config.set("translation.target_language", args.target_lang)
-        
+
         # Set processing flags
         if args.ocr:
             config.set("extraction.force_ocr", True)
@@ -250,43 +249,43 @@ def main() -> int:
             config.set("term_extraction.enabled", False)
         if args.no_layout:
             config.set("layout.enabled", False)
-        
+
         # Parse page range
         pages = parse_page_range(args.pages) if args.pages else None
-        
+
         # Generate output path if not specified
         input_path = Path(args.input)
         output_path = Path(args.output) if args.output else generate_output_path(
             input_path, config.get("output.format", "html")
         )
-        
+
         # Log configuration
         logger.info(f"Processing: {input_path}")
         logger.info(f"Output: {output_path}")
         logger.info(f"Engine: {config.get('translation.engine')}")
         logger.info(f"Format: {config.get('output.format')}")
-        
+
         if not args.quiet:
             print(f"📄 Processing: {input_path}")
             print(f"🚀 Engine: {config.get('translation.engine')}")
             print(f"📝 Output: {output_path}")
-        
+
         # Create and run pipeline
         pipeline = TranslationPipeline(config)
-        
+
         if args.dry_run:
             # Dry run - only analyze
             if not args.quiet:
                 print("\n🔍 Analyzing PDF (dry run)...")
-            
+
             result = pipeline.analyze(str(input_path), pages=pages)
-            
-            print(f"\n📊 Analysis Results:")
+
+            print("\n📊 Analysis Results:")
             print(f"  Pages: {result['total_pages']}")
             print(f"  Text pages: {result['text_pages']}")
             print(f"  Image pages: {result['image_pages']}")
             print(f"  Total characters: {result['total_chars']}")
-            
+
             if result.get('terms'):
                 print(f"  Technical terms found: {len(result['terms'])}")
                 print("  Sample terms:")
@@ -296,24 +295,23 @@ def main() -> int:
             # Full translation
             if not args.quiet:
                 print("\n🔄 Starting translation...")
-            
+
             result = pipeline.translate(
                 str(input_path),
                 str(output_path),
                 pages=pages
             )
-            
+
             if not args.quiet:
-                print(f"\n✅ Translation completed!")
+                print("\n✅ Translation completed!")
                 print(f"📄 Output saved to: {output_path}")
                 print(f"⏱️  Time: {result['processing_time']:.1f}s")
                 print(f"📊 Pages processed: {result['pages_processed']}")
-                
+
                 if result.get('terms_extracted'):
                     print(f"🔤 Terms extracted: {result['terms_extracted']}")
-        
+
         return 0
-        
     except KeyboardInterrupt:
         print("\n⚠️  Translation cancelled by user")
         return 130
