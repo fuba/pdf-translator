@@ -10,7 +10,11 @@
       "Bash(grep:*)",
       "Bash(sed:*)",
       "Bash(curl:*)",
-      "Bash(./run-uv.sh sync:*)"
+      "Bash(./run-uv.sh sync:*)",
+      "Bash(gh workflow:*)",
+      "Bash(export:*)",
+      "Bash(uv run ruff check:*)",
+      "Bash(make:*)"
     ]
   },
   "enableAllProjectMcpServers": false

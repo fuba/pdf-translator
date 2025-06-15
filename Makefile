@@ -30,7 +30,7 @@ format:
 	$(UV) run ruff format .
 
 type-check:
-	$(UV) run mypy src/
+	$(UV) run mypy pdf_translator/ main.py
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
@@ -59,4 +59,4 @@ check: lint type-check test
 # Quick translation test
 test-translate:
 	@echo "Running quick translation test..."
-	$(UV) run python -m src.main --input tests/fixtures/sample.pdf --output output/test.md
+	$(UV) run python main.py tests/fixtures/sample_english.pdf --dry-run

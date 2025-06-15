@@ -39,7 +39,6 @@ dependencies = [
     "pydantic>=2.5.0",
     "rich>=13.7.0",
     "click>=8.1.0",
-    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -53,7 +52,7 @@ dev = [
 ]
 
 [project.scripts]
-pdf-translator = "src.main:cli"
+pdf-translator = "main:main"
 
 [tool.ruff]
 line-length = 100

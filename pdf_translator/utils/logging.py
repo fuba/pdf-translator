@@ -1,5 +1,4 @@
-"""
-Logging utilities for PDF translator.
+"""Logging utilities for PDF translator.
 
 Provides consistent logging configuration across the application.
 """
@@ -15,23 +14,23 @@ def setup_logging(
     log_file: Optional[str] = None,
     format_string: Optional[str] = None
 ) -> None:
-    """
-    Setup logging configuration for the application.
-    
+    """Setup logging configuration for the application.
+
     Args:
         level: Logging level (default: INFO)
         log_file: Optional log file path
         format_string: Optional custom format string
+
     """
     # Default format
     if format_string is None:
         format_string = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    
+
     # Create logs directory if needed
     if log_file:
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Configure root logger
     logging.basicConfig(
         level=level,
@@ -41,7 +40,7 @@ def setup_logging(
             *(logging.FileHandler(log_file) if log_file else [])
         ]
     )
-    
+
     # Set specific library log levels to reduce noise
     logging.getLogger("PIL").setLevel(logging.WARNING)
     logging.getLogger("fitz").setLevel(logging.WARNING)

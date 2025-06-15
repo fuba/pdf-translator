@@ -8,9 +8,9 @@ from typing import Any, Dict, List, Optional
 import jinja2
 from markupsafe import Markup
 
+from pdf_translator.config.manager import ConfigManager
 from pdf_translator.extractor import PageInfo
 from pdf_translator.layout_analyzer import LayoutRegion, RegionType
-from pdf_translator.config.manager import ConfigManager
 
 logger = logging.getLogger(__name__)
 

@@ -1,10 +1,10 @@
 #!/bin/bash
 # UV wrapper script to handle path issues
 
-# Common UV installation paths
+# Common UV installation paths (reordered to check .local/bin first)
 UV_PATHS=(
-    "$HOME/.cargo/bin/uv"
     "$HOME/.local/bin/uv"
+    "$HOME/.cargo/bin/uv"
     "/usr/local/bin/uv"
     "/opt/homebrew/bin/uv"
 )

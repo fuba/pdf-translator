@@ -9,8 +9,8 @@ from typing import Dict, List, Optional, Tuple
 import torch
 from transformers import AutoProcessor
 
-from pdf_translator.extractor.pdf_extractor import PageInfo, TextBlock
 from pdf_translator.config.manager import ConfigManager
+from pdf_translator.extractor.pdf_extractor import PageInfo, TextBlock
 
 logger = logging.getLogger(__name__)
 

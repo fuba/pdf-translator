@@ -37,8 +37,10 @@ def test_ollama_connection():
     """Test connection to Ollama server."""
     print("\nTesting Ollama connection...")
     try:
-        import requests
         import os
+
+        import requests
+
         from pdf_translator.config.manager import ConfigManager
 
         # Load configuration to get expected model

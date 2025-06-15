@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 import requests
+
 from pdf_translator.config.manager import ConfigManager
 
 # spaCy import with error handling

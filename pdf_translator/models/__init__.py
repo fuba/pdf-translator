@@ -2,7 +2,7 @@
 
 from .document import Document
 from .layout import Region, RegionType
-from .page import Page, TextBlock, Image
+from .page import Image, Page, TextBlock
 
 __all__ = [
     "Document",

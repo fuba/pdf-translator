@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import requests
+
 from pdf_translator.config.manager import ConfigManager
 
 # OpenAI import is optional
@@ -42,7 +43,7 @@ class TranslatorConfig:
         """Create config from ConfigManager with environment variable support."""
         # Get default model from environment or config
         default_model = os.getenv("OLLAMA_MODEL") or config.get("translator.model", "gemma3:12b-it-q8_0")
-        
+
         return cls(
             engine=config.get("translator.engine", "ollama"),
             model=default_model,
@@ -162,7 +163,7 @@ class OllamaTranslator(BaseTranslator):
             url = f"{self.translator_config.base_url}/chat"
             logger.info(f"Sending request to {url} with model {self.translator_config.model}")
             logger.debug(f"Request payload: {payload}")
-            
+
             response = requests.post(
                 url,
                 json=payload,

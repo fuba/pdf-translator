@@ -4,8 +4,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from pdf_translator.term_miner import Term
 from pdf_translator.config.manager import ConfigManager
+from pdf_translator.term_miner import Term
 
 logger = logging.getLogger(__name__)
 

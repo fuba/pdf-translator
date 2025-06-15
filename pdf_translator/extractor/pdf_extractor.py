@@ -9,7 +9,8 @@ import fitz  # PyMuPDF  # type: ignore
 
 from pdf_translator.config.manager import ConfigManager
 from pdf_translator.models.document import Document
-from pdf_translator.models.page import Page, TextBlock as ModelTextBlock, Image
+from pdf_translator.models.page import Page
+from pdf_translator.models.page import TextBlock as ModelTextBlock
 
 logger = logging.getLogger(__name__)
 
@@ -96,24 +97,25 @@ class PDFExtractor:
         except Exception as e:
             logger.error(f"Error extracting PDF: {e}")
             raise
-    
+
     def extract(self, pdf_path: str, pages: Optional[List[int]] = None) -> Document:
         """Extract PDF content and return Document object.
-        
+
         Args:
             pdf_path: Path to PDF file
             pages: Optional list of page numbers to extract (1-indexed)
-            
+
         Returns:
             Document object with extracted content
+
         """
         # Extract all pages first
         page_infos = self.extract_pdf(Path(pdf_path))
-        
+
         # Filter pages if specified
         if pages:
             page_infos = [p for p in page_infos if p.page_num + 1 in pages]
-        
+
         # Convert to Document model
         doc_pages = []
         for page_info in page_infos:
@@ -130,7 +132,7 @@ class PDFExtractor:
                     font_size=block.font_size,
                     font_name=block.font_name
                 ))
-            
+
             # Create page
             page = Page(
                 number=page_info.page_num + 1,  # Convert to 1-indexed
@@ -140,7 +142,7 @@ class PDFExtractor:
                 images=[]  # TODO: Extract images if needed
             )
             doc_pages.append(page)
-        
+
         # Create document
         return Document(
             pages=doc_pages,

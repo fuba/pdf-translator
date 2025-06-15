@@ -2,6 +2,7 @@
 """Simple pipeline test to identify bottlenecks."""
 
 import logging
+
 from pdf_translator.config.manager import ConfigManager
 from pdf_translator.core.pipeline import TranslationPipeline
 
@@ -13,7 +14,7 @@ def test_analysis_only():
     print("=== Testing PDF Analysis Only ===")
     config = ConfigManager()
     pipeline = TranslationPipeline(config)
-    
+
     try:
         result = pipeline.analyze("tests/fixtures/sample_english.pdf", pages=[1])
         print(f"Analysis successful: {result}")
@@ -26,10 +27,10 @@ def test_extractor_only():
     """Test only PDF extraction."""
     print("=== Testing PDF Extraction Only ===")
     from pdf_translator.extractor import PDFExtractor
-    
+
     config = ConfigManager()
     extractor = PDFExtractor(config)
-    
+
     try:
         document = extractor.extract("tests/fixtures/sample_english.pdf", pages=[1])
         print(f"Extraction successful: {document}")
@@ -43,10 +44,10 @@ def test_translator_only():
     """Test only translation."""
     print("=== Testing Translation Only ===")
     from pdf_translator.translator import OllamaTranslator
-    
+
     config = ConfigManager()
     translator = OllamaTranslator(config)
-    
+
     try:
         result = translator.translate("This is a test.")
         print(f"Translation successful: {result}")
@@ -58,13 +59,14 @@ def test_translator_only():
 def test_renderer_only():
     """Test only rendering."""
     print("=== Testing Rendering Only ===")
-    from pdf_translator.renderer import DocumentRenderer
-    from pdf_translator.extractor import PageInfo
     from pathlib import Path
-    
+
+    from pdf_translator.extractor import PageInfo
+    from pdf_translator.renderer import DocumentRenderer
+
     config = ConfigManager()
     renderer = DocumentRenderer(config)
-    
+
     # Create simple test page
     page_info = PageInfo(
         page_num=0,
@@ -75,7 +77,7 @@ def test_renderer_only():
         has_images=False
     )
     translated_texts = {0: "これはテストです。"}
-    
+
     try:
         output_path = Path("test_render_output.html")
         renderer.render_from_pages([page_info], translated_texts, output_path)
@@ -87,22 +89,22 @@ def test_renderer_only():
 
 if __name__ == "__main__":
     print("Starting component tests...\n")
-    
+
     # Test individual components
     extractor_ok = test_extractor_only()
     print()
-    
+
     translator_ok = test_translator_only()
     print()
-    
+
     renderer_ok = test_renderer_only()
     print()
-    
+
     # Test analysis pipeline if components work
     if extractor_ok:
         analysis_ok = test_analysis_only()
         print()
-    
+
     print("=== Test Summary ===")
     print(f"Extractor: {'✓' if extractor_ok else '✗'}")
     print(f"Translator: {'✓' if translator_ok else '✗'}")
