@@ -17,7 +17,7 @@ class TestTranslatorConfig:
         """Test creating config from dictionary."""
         config_dict = {
             "engine": "ollama",
-            "model": "gemma3:12b",
+            "model": "gemma3:4b",
             "base_url": "http://localhost:11434/api",
             "temperature": 0.3,
             "max_tokens": 4096
@@ -25,7 +25,7 @@ class TestTranslatorConfig:
         config = TranslatorConfig.from_dict(config_dict)
 
         assert config.engine == "ollama"
-        assert config.model == "gemma3:12b"
+        assert config.model == "gemma3:4b"
         assert config.base_url == "http://localhost:11434/api"
         assert config.temperature == 0.3
         assert config.max_tokens == 4096
@@ -35,7 +35,7 @@ class TestTranslatorConfig:
         config = TranslatorConfig()
 
         assert config.engine == "ollama"
-        assert config.model == "gemma3:12b"
+        assert config.model == "gemma3:4b"
         assert config.temperature == 0.3
 
 
@@ -85,7 +85,7 @@ class TestOllamaTranslator:
 
         config = TranslatorConfig(
             engine="ollama",
-            model="gemma3:12b",
+            model="gemma3:4b",
             base_url="http://localhost:11434/api"
         )
         translator = OllamaTranslator(config)
@@ -107,7 +107,7 @@ class TestOllamaTranslator:
         assert call_args[0][0] == "http://localhost:11434/api/chat"
 
         payload = call_args[1]["json"]
-        assert payload["model"] == "gemma3:12b"
+        assert payload["model"] == "gemma3:4b"
         assert len(payload["messages"]) == 2  # system + user
 
     @patch('requests.post')
@@ -115,8 +115,9 @@ class TestOllamaTranslator:
         """Test translation failure handling."""
         mock_post.side_effect = Exception("Connection error")
 
-        config = TranslatorConfig(engine="ollama")
-        translator = OllamaTranslator(config)
+        test_config_path = Path(__file__).parent / "test_config.yml"
+        config_manager = ConfigManager(str(test_config_path))
+        translator = OllamaTranslator(config_manager)
 
         result = translator.translate(
             "This is a test.",
@@ -140,8 +141,9 @@ class TestOllamaTranslator:
         ]
         mock_post.return_value = mock_response
 
-        config = TranslatorConfig(engine="ollama")
-        translator = OllamaTranslator(config)
+        test_config_path = Path(__file__).parent / "test_config.yml"
+        config_manager = ConfigManager(str(test_config_path))
+        translator = OllamaTranslator(config_manager)
 
         texts = ["This is test 1.", "This is test 2."]
         results = translator.translate_batch(
@@ -226,14 +228,14 @@ class TestTranslationResult:
             source_lang="en",
             target_lang="ja",
             success=True,
-            metadata={"model": "gemma3:12b"}
+            metadata={"model": "gemma3:4b"}
         )
 
         assert result.translated_text == "これはテストです。"
         assert result.source_lang == "en"
         assert result.target_lang == "ja"
         assert result.success is True
-        assert result.metadata["model"] == "gemma3:12b"
+        assert result.metadata["model"] == "gemma3:4b"
 
     def test_failed_result(self):
         """Test failed translation result."""

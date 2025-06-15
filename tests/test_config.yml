@@ -1,0 +1,45 @@
+# Test configuration for unit tests
+translator:
+  engine: ollama
+  model: gemma3:4b
+  openai_model: gpt-3.5-turbo
+  api_key: ""
+  base_url: "http://localhost:11434/api"
+  temperature: 0.3
+  max_tokens: 4096
+  timeout: 120
+
+source_language: en
+target_language: ja
+preserve_format: true
+include_source_term: true
+
+use_ocr: true
+ocr_languages: ["en", "ja"]
+
+layout_analysis: true
+skip_elements:
+  - table
+  - figure
+  - code
+
+max_pages: 50
+batch_size: 5
+
+output_format: markdown
+page_separator: hr
+output_dir: "./output"
+
+log_level: INFO
+log_file: "./logs/pdf-translator.log"
+
+term_extraction:
+  enabled: true
+  min_frequency: 2
+  max_terms: 100
+  wikipedia_lookup: true
+
+cache:
+  enabled: true
+  dir: "./cache"
+  ttl_hours: 168

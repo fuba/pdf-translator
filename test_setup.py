@@ -37,26 +37,36 @@ def test_ollama_connection():
     """Test connection to Ollama server."""
     print("\nTesting Ollama connection...")
     try:
-
         import requests
+        import os
+        from pdf_translator.config.manager import ConfigManager
+
+        # Load configuration to get expected model
+        try:
+            config = ConfigManager()
+            expected_model = os.getenv("OLLAMA_MODEL") or config.get("translator.model", "gemma3:12b-it-q8_0")
+            api_url = os.getenv("OLLAMA_API_URL") or config.get("translator.base_url", "http://localhost:11434/api")
+        except:
+            expected_model = "gemma3:12b-it-q8_0"
+            api_url = "http://localhost:11434/api"
 
         # Use requests directly for better compatibility
-        response = requests.get("http://localhost:11434/api/tags")
+        response = requests.get(f"{api_url.replace('/api', '')}/api/tags")
         response.raise_for_status()
         data = response.json()
 
         print("✓ Connected to Ollama")
         print(f"  Available models: {len(data['models'])}")
 
-        # Check for gemma3:12b
+        # Check for expected model
         model_names = [m["name"] for m in data["models"]]
         print(f"  Models: {model_names}")
 
-        if "gemma3:12b" in model_names:
-            print("✓ gemma3:12b is available")
+        if expected_model in model_names:
+            print(f"✓ {expected_model} is available")
             return True
         else:
-            print("✗ gemma3:12b not found")
+            print(f"✗ {expected_model} not found")
             return False
 
     except requests.exceptions.ConnectionError:

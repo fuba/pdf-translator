@@ -19,16 +19,14 @@ class TestEndToEndIntegration:
     def test_config(self, tmp_path):
         """Create test configuration."""
         config_data = {
-            "translation": {
+            "translator": {
                 "engine": "ollama",
-                "source_language": "en",
-                "target_language": "ja",
-                "ollama": {
-                    "api_url": "http://localhost:11434",
-                    "model": "gemma3:12b",
-                    "timeout": 60
-                }
+                "model": "gemma3:4b",
+                "base_url": "http://localhost:11434/api",
+                "timeout": 60
             },
+            "source_language": "en",
+            "target_language": "ja",
             "extraction": {
                 "max_pages": 50,  
                 "enable_ocr": True,

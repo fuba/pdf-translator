@@ -4,7 +4,8 @@ from pathlib import Path
 
 import yaml
 
-from src.translator import OllamaTranslator, TranslatorConfig, TranslatorFactory
+from pdf_translator.config.manager import ConfigManager
+from pdf_translator.translator import OllamaTranslator, TranslatorConfig, TranslatorFactory
 
 # Setup logging
 logging.basicConfig(
@@ -17,8 +18,8 @@ logger = logging.getLogger(__name__)
 def test_ollama_connection():
     """Test Ollama server connection."""
     print("\n=== Testing Ollama Connection ===")
-    config = TranslatorConfig(engine="ollama")
-    translator = OllamaTranslator(config)
+    config_manager = ConfigManager()
+    translator = OllamaTranslator(config_manager)
 
     if translator.check_connection():
         print("✓ Ollama server is running")

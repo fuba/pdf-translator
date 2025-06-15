@@ -23,19 +23,36 @@ logger = logging.getLogger(__name__)
 class TranslatorConfig:
     """Configuration for translator."""
 
-    engine: str = "ollama"  # ollama or openai
-    model: str = "gemma3:12b"  # Model name for Ollama
-    openai_model: str = "gpt-3.5-turbo"  # Model name for OpenAI
-    api_key: Optional[str] = None  # API key for OpenAI
-    base_url: str = "http://localhost:11434/api"  # Ollama API endpoint
-    temperature: float = 0.3  # Lower for more consistent translations
-    max_tokens: int = 4096  # Maximum tokens per request
-    timeout: int = 300  # Request timeout in seconds
+    engine: str
+    model: str
+    openai_model: str
+    base_url: str
+    temperature: float
+    max_tokens: int
+    timeout: int
+    api_key: Optional[str] = None
 
     @classmethod
     def from_dict(cls, config_dict: Dict[str, Any]) -> "TranslatorConfig":
         """Create config from dictionary."""
         return cls(**{k: v for k, v in config_dict.items() if k in cls.__dataclass_fields__})
+
+    @classmethod
+    def from_config_manager(cls, config: ConfigManager) -> "TranslatorConfig":
+        """Create config from ConfigManager with environment variable support."""
+        # Get default model from environment or config
+        default_model = os.getenv("OLLAMA_MODEL") or config.get("translator.model", "gemma3:12b-it-q8_0")
+        
+        return cls(
+            engine=config.get("translator.engine", "ollama"),
+            model=default_model,
+            openai_model=config.get("translator.openai_model", "gpt-3.5-turbo"),
+            api_key=os.getenv("OPENAI_API_KEY") or config.get("translator.api_key", ""),
+            base_url=os.getenv("OLLAMA_API_URL") or config.get("translator.base_url", "http://localhost:11434/api"),
+            temperature=config.get("translator.temperature", 0.3),
+            max_tokens=config.get("translator.max_tokens", 4096),
+            timeout=int(os.getenv("OLLAMA_TIMEOUT", config.get("translator.timeout", 120)))
+        )
 
 
 @dataclass
@@ -56,15 +73,7 @@ class BaseTranslator(ABC):
     def __init__(self, config: Optional[ConfigManager] = None):
         self.config = config or ConfigManager()
         # Create translator config from ConfigManager
-        self.translator_config = TranslatorConfig(
-            engine=self.config.get("translator.engine", "ollama"),
-            model=self.config.get("translator.model", "gemma3:12b"),
-            base_url=self.config.get("translator.base_url", "http://localhost:11434/api"),
-            api_key=self.config.get("translator.api_key", ""),
-            temperature=self.config.get("translator.temperature", 0.3),
-            max_tokens=self.config.get("translator.max_tokens", 4096),
-            timeout=self.config.get("translator.timeout", 120.0)
-        )
+        self.translator_config = TranslatorConfig.from_config_manager(self.config)
 
     def get_system_prompt(self, source_lang: str, target_lang: str,
                          preserve_format: bool = True) -> str:
