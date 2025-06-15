@@ -51,8 +51,16 @@ class TestDocumentRenderer:
         return AnnotatedDocument(
             config=config,
             annotated_pages={
-                0: "これはタイトルです\n\nこれは段落です。専門用語（technical term）が含まれています。\n\nもう一つの段落です。",
-                1: "2ページ目のタイトル\n\nこれは2ページ目の内容です。\n\n- リスト項目1\n- リスト項目2\n- リスト項目3",
+                0: (
+                    "これはタイトルです\n\n"
+                    "これは段落です。専門用語（technical term）が含まれています。\n\n"
+                    "もう一つの段落です。"
+                ),
+                1: (
+                    "2ページ目のタイトル\n\n"
+                    "これは2ページ目の内容です。\n\n"
+                    "- リスト項目1\n- リスト項目2\n- リスト項目3"
+                ),
             },
         )
 

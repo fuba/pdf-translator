@@ -52,7 +52,7 @@ def test_ollama_connection():
             api_url = os.getenv("OLLAMA_API_URL") or config.get(
                 "translator.base_url", "http://localhost:11434/api"
             )
-        except:
+        except Exception:
             expected_model = "gemma3:12b-it-q8_0"
             api_url = "http://localhost:11434/api"
 

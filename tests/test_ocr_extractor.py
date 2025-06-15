@@ -56,7 +56,7 @@ class TestOCRExtractor:
         # Try to use a basic font, fallback to default if not available
         try:
             font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 40)
-        except:
+        except Exception:
             font = ImageFont.load_default()
 
         # Draw text

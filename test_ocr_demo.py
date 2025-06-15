@@ -55,9 +55,9 @@ def test_ocr_extraction():
                         logger.info(
                             f"    Block {i + 1} ({block.block_type}, size={block.font_size:.1f}):"
                         )
-                        logger.info(
-                            f"      Text: {block.text[:100]}{'...' if len(block.text) > 100 else ''}"
-                        )
+                        preview = block.text[:100]
+                        suffix = "..." if len(block.text) > 100 else ""
+                        logger.info(f"      Text: {preview}{suffix}")
 
                 # Check if OCR was used
                 if any(block.font_name == "OCR" for block in page.text_blocks):
@@ -94,7 +94,7 @@ def test_image_pdf_creation_and_ocr():
             try:
                 font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 48)
                 font_normal = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 24)
-            except:
+            except Exception:
                 font_large = ImageFont.load_default()
                 font_normal = ImageFont.load_default()
 
