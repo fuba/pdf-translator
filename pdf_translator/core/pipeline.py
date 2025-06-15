@@ -16,6 +16,7 @@ from pdf_translator.post_processor import PostProcessor
 from pdf_translator.renderer import DocumentRenderer
 from pdf_translator.term_miner import TermMiner
 from pdf_translator.translator import OllamaTranslator, OpenAITranslator
+from pdf_translator.translator.chunked_translator import ChunkedTranslator
 
 
 class TranslationPipeline:
@@ -29,23 +30,32 @@ class TranslationPipeline:
         # Initialize components
         self.extractor = PDFExtractor(config)
         self.layout_analyzer = (
-            LayoutAnalyzer(config) if config.get("layout.enabled", True) else None
+            LayoutAnalyzer(config) if config.get("layout_analysis", True) else None
         )
         self.term_miner = TermMiner(config) if config.get("term_extraction.enabled", True) else None
         # Create translator based on engine type
         engine = config.get("translation.engine", "ollama")
-        if engine == "ollama":
-            self.translator = OllamaTranslator(config)
-        elif engine == "openai":
-            self.translator = OpenAITranslator(config)
+        use_chunked = config.get("translation.use_chunked", True)
+        
+        if use_chunked:
+            # Use chunked translator for better performance and consistency
+            self.translator = ChunkedTranslator(config)
         else:
-            raise ValueError(f"Unsupported translator engine: {engine}")
+            # Use traditional single-request translator
+            if engine == "ollama":
+                self.translator = OllamaTranslator(config)
+            elif engine == "openai":
+                self.translator = OpenAITranslator(config)
+            else:
+                raise ValueError(f"Unsupported translator engine: {engine}")
+        
         self.post_processor = PostProcessor(config)
         self.renderer = DocumentRenderer(config)
 
         # Pipeline state
         self.technical_terms: Dict[str, str] = {}
         self.processed_terms: Set[str] = set()
+        self.layout_results: Dict[int, Any] = {}  # Store layout results for rendering
 
     def analyze(self, input_path: str, pages: Optional[List[int]] = None) -> Dict[str, Any]:
         """Analyze PDF without translation (dry run)."""
@@ -113,11 +123,27 @@ class TranslationPipeline:
 
         # Step 3: Process each page
         translated_pages = []
-        self.layout_results = {}  # Store layout results for rendering
+        total_pages = len(document.pages)
+        
         for i, page in enumerate(document.pages):
-            self.logger.info(f"Processing page {i + 1}/{len(document.pages)}...")
-            translated_page = self._process_page(page, i + 1)
-            translated_pages.append(translated_page)
+            page_num = i + 1
+            self.logger.info(f"🔄 Processing page {page_num}/{total_pages} ({(page_num/total_pages)*100:.1f}%)")
+            
+            # Add timeout protection per page
+            page_start_time = time.time()
+            
+            try:
+                translated_page = self._process_page(page, page_num)
+                translated_pages.append(translated_page)
+                
+                page_duration = time.time() - page_start_time
+                self.logger.info(f"✅ Page {page_num} completed in {page_duration:.1f}s")
+                
+            except Exception as e:
+                page_duration = time.time() - page_start_time
+                self.logger.error(f"❌ Page {page_num} failed after {page_duration:.1f}s: {str(e)}")
+                # Add the original page as fallback
+                translated_pages.append(page)
 
         # Step 4: Create translated document
         Document(
@@ -230,6 +256,8 @@ class TranslationPipeline:
 
     def _process_page(self, page: Page, page_number: int) -> Page:
         """Process a single page through the pipeline."""
+        self.logger.info(f"Processing page {page_number}: has_text={page.has_text}, text_blocks={len(page.text_blocks)}")
+        
         # Skip if no text (image-only page)
         if not page.has_text:
             self.logger.info(f"Page {page_number} is image-only, skipping translation")
@@ -274,6 +302,7 @@ class TranslationPipeline:
                 from pdf_translator.models.layout import Region, RegionType
 
                 page.regions = []
+                self.logger.debug(f"Found {len(layout_result.regions)} layout regions")
                 for layout_region in layout_result.regions:
                     # Map layout analyzer region type to model region type
                     region_type_mapping = {
@@ -291,6 +320,8 @@ class TranslationPipeline:
                     region_type = region_type_mapping.get(
                         layout_region.region_type.value, RegionType.UNKNOWN
                     )
+                    
+                    self.logger.debug(f"Layout region: type={layout_region.region_type.value} -> {region_type}, bbox={layout_region.bbox}")
 
                     region = Region(
                         type=region_type,
@@ -304,31 +335,122 @@ class TranslationPipeline:
 
         # Translate text blocks
         translated_blocks = []
-        for block in page.text_blocks:
-            # Skip if block is in a figure or table region
-            if self._is_in_non_text_region(block, page):
-                translated_blocks.append(block)
-                continue
+        
+        self.logger.info(f"Starting translation for page {page_number} with {len(page.text_blocks)} text blocks")
+        
+        # Check if using chunked translator
+        if isinstance(self.translator, ChunkedTranslator):
+            self.logger.info(f"Using ChunkedTranslator for page {page_number}")
+            # Process all blocks, maintaining original order
+            text_block_map = {}  # Maps original block index to translated text
+            page_text_blocks = []
+            page_text = ""
+            
+            # First pass: collect text blocks and build page text
+            for i, block in enumerate(page.text_blocks):
+                if self._is_in_non_text_region(block, page):
+                    self.logger.debug(f"Skipping block {i} in non-text region: {block.text[:50]}...")
+                    continue
+                page_text_blocks.append((i, block))  # Store original index
+                page_text += block.text + "\n\n"
+            
+            self.logger.debug(f"Collected {len(page_text_blocks)} text blocks out of {len(page.text_blocks)} total blocks")
+            
+            if page_text.strip():
+                # Translate entire page with chunked approach
+                self.logger.info(f"Translating page {page_number} with chunked approach (length: {len(page_text)})")
+                
+                source_lang = self.config.get("translation.source_language", "auto")
+                target_lang = self.config.get("translation.target_language", "ja")
+                
+                self.logger.debug(f"Source language: {source_lang}, Target language: {target_lang}")
+                
+                try:
+                    translation_results = self.translator.translate_chunked(
+                        page_text.strip(), source_lang, target_lang
+                    )
+                except Exception as e:
+                    self.logger.error(f"Translation request failed: {e}")
+                    # Return original page if translation fails
+                    return page
+                
+                self.logger.debug(f"Translation results: {len(translation_results)} chunks")
+                for i, result in enumerate(translation_results):
+                    if result.success:
+                        self.logger.debug(f"Chunk {i} translated successfully")
+                    else:
+                        self.logger.error(f"Chunk {i} translation failed: {result.error}")
+                
+                # Merge translation results
+                merged_translation = self.translator.merge_translation_results(translation_results)
+                self.logger.debug(f"Merged translation length: {len(merged_translation)}")
+                
+                # Split merged translation back to blocks (approximate)
+                translated_paragraphs = [p.strip() for p in merged_translation.split('\n\n') if p.strip()]
+                
+                # Map translated paragraphs back to original blocks
+                for j, (orig_idx, block) in enumerate(page_text_blocks):
+                    if j < len(translated_paragraphs):
+                        translated_text = translated_paragraphs[j]
+                    else:
+                        # Fallback: translate individually
+                        result = self.translator.translate_chunk(
+                            type('Chunk', (), {'text': block.text, 'chunk_id': j})(),
+                            source_lang, target_lang
+                        )
+                        translated_text = result.translated_text if result.success else block.text
+                    
+                    # Post-process the translation
+                    if self.post_processor:
+                        result = self.post_processor.process(translated_text, self.technical_terms)
+                        translated_text = (
+                            result.processed_text if hasattr(result, "processed_text") else translated_text
+                        )
+                    
+                    # Store mapping
+                    text_block_map[orig_idx] = translated_text
+            
+            # Second pass: create translated blocks in original order
+            for i, block in enumerate(page.text_blocks):
+                if self._is_in_non_text_region(block, page):
+                    # Add non-text blocks (figures, tables) as-is
+                    translated_blocks.append(block)
+                elif i in text_block_map:
+                    # Add translated text block
+                    translated_block = block.copy()
+                    translated_block.text = text_block_map[i]
+                    translated_blocks.append(translated_block)
+                else:
+                    # Should not happen, but add as-is for safety
+                    translated_blocks.append(block)
+        
+        else:
+            # Traditional block-by-block translation
+            for block in page.text_blocks:
+                # Skip if block is in a figure or table region
+                if self._is_in_non_text_region(block, page):
+                    translated_blocks.append(block)
+                    continue
 
-            # Translate the text
-            self.logger.debug(f"Translating text block: {block.text[:50]}...")
-            result = self.translator.translate(block.text)
-            translated_text = (
-                result.translated_text if hasattr(result, "translated_text") else str(result)
-            )
-            self.logger.debug(f"Translation result: {translated_text[:50]}...")
-
-            # Post-process the translation
-            if self.post_processor:
-                result = self.post_processor.process(translated_text, self.technical_terms)
+                # Translate the text
+                self.logger.debug(f"Translating text block: {block.text[:50]}...")
+                result = self.translator.translate(block.text)
                 translated_text = (
-                    result.processed_text if hasattr(result, "processed_text") else translated_text
+                    result.translated_text if hasattr(result, "translated_text") else str(result)
                 )
+                self.logger.debug(f"Translation result: {translated_text[:50]}...")
 
-            # Create translated block
-            translated_block = block.copy()
-            translated_block.text = translated_text
-            translated_blocks.append(translated_block)
+                # Post-process the translation
+                if self.post_processor:
+                    result = self.post_processor.process(translated_text, self.technical_terms)
+                    translated_text = (
+                        result.processed_text if hasattr(result, "processed_text") else translated_text
+                    )
+
+                # Create translated block
+                translated_block = block.copy()
+                translated_block.text = translated_text
+                translated_blocks.append(translated_block)
 
         # Create translated page
         translated_page = Page(

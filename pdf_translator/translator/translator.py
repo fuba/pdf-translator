@@ -159,7 +159,7 @@ class OllamaTranslator(BaseTranslator):
             system_prompt = self.get_system_prompt(source_lang, target_lang)
             prepared_text = self.prepare_text(text)
 
-            # Build payload
+            # Build payload (OpenAI compatible)
             payload = {
                 "model": self.translator_config.model,
                 "messages": [
@@ -167,14 +167,12 @@ class OllamaTranslator(BaseTranslator):
                     {"role": "user", "content": prepared_text},
                 ],
                 "stream": False,
-                "options": {
-                    "temperature": self.translator_config.temperature,
-                    "num_predict": self.translator_config.max_tokens,
-                },
+                "temperature": self.translator_config.temperature,
+                "max_tokens": self.translator_config.max_tokens,
             }
 
             # Make request
-            url = f"{self.translator_config.base_url}/chat"
+            url = f"{self.translator_config.base_url}/v1/chat/completions"
             logger.info(f"Sending request to {url} with model {self.translator_config.model}")
             logger.debug(f"Request payload: {payload}")
 
@@ -184,7 +182,7 @@ class OllamaTranslator(BaseTranslator):
 
             # Parse response
             result_data = response.json()
-            translated_text = result_data["message"]["content"]
+            translated_text = result_data["choices"][0]["message"]["content"]
 
             return TranslationResult(
                 translated_text=translated_text,

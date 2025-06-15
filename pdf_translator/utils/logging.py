@@ -10,7 +10,7 @@ from typing import Optional
 
 
 def setup_logging(
-    level: int = logging.INFO, log_file: Optional[str] = None, format_string: Optional[str] = None
+    level: int = logging.INFO, log_file: Optional[str] = "logs/debug.log", format_string: Optional[str] = None
 ) -> None:
     """Set up logging configuration for the application.
 
@@ -30,13 +30,14 @@ def setup_logging(
         log_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Configure root logger
+    handlers = [logging.StreamHandler(sys.stdout)]
+    if log_file:
+        handlers.append(logging.FileHandler(log_file))
+    
     logging.basicConfig(
         level=level,
         format=format_string,
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-            *(logging.FileHandler(log_file) if log_file else []),
-        ],
+        handlers=handlers,
     )
 
     # Set specific library log levels to reduce noise

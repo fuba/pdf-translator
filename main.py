@@ -91,7 +91,7 @@ Examples:
     )
 
     parser.add_argument(
-        "--pages", type=str, default=None, help="Page range to process (e.g., '1-10', '1,3,5-7')"
+        "--pages", type=str, default=None, help="Page range to process (e.g., '1-10', '1,3,5-7'). Default: all pages (max 50)"
     )
 
     parser.add_argument(
@@ -267,7 +267,7 @@ def main() -> int:
         # Setup configuration
         config = setup_configuration(args)
 
-        # Parse page range
+        # Parse page range (default: all pages)
         pages = parse_page_range(args.pages) if args.pages else None
 
         # Generate output path if not specified

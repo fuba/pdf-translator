@@ -218,6 +218,8 @@ class DocumentRenderer:
             raise ValueError(f"Unsupported output format: {self.render_config.output_format}")
 
         # Write output
+        from pathlib import Path
+        output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(content, encoding="utf-8")
 

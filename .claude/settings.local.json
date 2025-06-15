@@ -17,7 +17,9 @@
       "Bash(make:*)",
       "Bash(gh run list:*)",
       "Bash(gh run view:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(rm:*)"
     ]
   },
   "enableAllProjectMcpServers": false

@@ -1396,7 +1396,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "rich" },
-    { name = "spacy" },
+    { name = "spacy", extra = ["transformers"] },
     { name = "torch" },
     { name = "torchvision" },
     { name = "transformers" },
@@ -1435,7 +1435,7 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0.1" },
     { name = "rich", specifier = ">=13.7.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
-    { name = "spacy", specifier = ">=3.7.0" },
+    { name = "spacy", extras = ["transformers"], specifier = ">=3.7.0" },
     { name = "torch", specifier = ">=2.0.0" },
     { name = "torchvision", specifier = ">=0.15.0" },
     { name = "transformers", specifier = ">=4.36.0" },
@@ -2283,6 +2283,40 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/02/99/881f6f24c279a5a70b8d69aaf8266fd411a0a58fd1c8848112aaa348f6f6/spacy-3.8.7-cp313-cp313-win_amd64.whl", hash = "sha256:ca81e416ff35209769e8b5dd5d13acc52e4f57dd9d028364bccbbe157c2ae86b", size = 13911250, upload-time = "2025-05-23T08:55:19.606Z" },
 ]
 
+[package.optional-dependencies]
+transformers = [
+    { name = "spacy-transformers" },
+]
+
+[[package]]
+name = "spacy-alignments"
+version = "0.9.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6d/15/37dd9a5dd5ebe1c3b0b2a56a1a922ed3c775b3e7d85d1f81e6b068739ee7/spacy_alignments-0.9.2.tar.gz", hash = "sha256:1c50b50d261550d3220887cfd0a12a6e85e709d815a66949f6b92340e4278d69", size = 7100, upload-time = "2025-06-03T11:19:09.405Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/72/f3/bb28e38d154c98dea692c5d54d063e2008ceb2806c04856740fec544918a/spacy_alignments-0.9.2-cp311-cp311-macosx_10_12_x86_64.whl", hash = "sha256:44e9138b7bdb71bd69c11a87893c34ebeff29be6f3f2dd1870dc8a02ea353086", size = 292995, upload-time = "2025-06-03T11:18:23.429Z" },
+    { url = "https://files.pythonhosted.org/packages/41/94/3ab5d11aab379be71a1ecc43294eb7b6aead60dfe21d82f0923d2bc0c1fc/spacy_alignments-0.9.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:6c31c794612e23be31ca3a558f70ec8836063f90de0bb70a0fc271de7a281db0", size = 288839, upload-time = "2025-06-03T11:18:25.063Z" },
+    { url = "https://files.pythonhosted.org/packages/3e/92/b48eab9fae4dc7c1e17a93a19e4c382657df1baa572464f6028a89f2ae62/spacy_alignments-0.9.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a79e76995deda6ddc2b53bfb55d4be8d73770844f9aea58cb3f7520d87feeb0e", size = 314523, upload-time = "2025-06-03T11:18:26.312Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/19/346e7325f68cf0e54feb7650e47c4668612c8a92b148d8a1392a9af974ed/spacy_alignments-0.9.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f204610daa25dd7602d00cefecdea5e3e106eb434dc510facf2f1e6cf0bc95a5", size = 314214, upload-time = "2025-06-03T11:18:28.015Z" },
+    { url = "https://files.pythonhosted.org/packages/f7/2e/b2ef0f4960d4f3d000ff60cee5841a114803137a559d98abf7d48a1cc3e2/spacy_alignments-0.9.2-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:c8628a5dc20c7226e6a0d102f41d6fd36832a617a39d8d5169a1cc2f908b1b98", size = 362532, upload-time = "2025-06-03T11:18:30.118Z" },
+    { url = "https://files.pythonhosted.org/packages/f0/3f/cc4aced9e5b1814941752bd381fdf2a99a8d12ac4bc5253b375e8175fbfd/spacy_alignments-0.9.2-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:e8452dda516c7f94692e03570b1335bc17443ca3232a555c11efab5f97dedba0", size = 375666, upload-time = "2025-06-03T11:18:31.82Z" },
+    { url = "https://files.pythonhosted.org/packages/c4/0d/b54bf88cd900a2bbccd8094704cfdab7e8e606c90dc17ef075e35f43396b/spacy_alignments-0.9.2-cp311-cp311-win_amd64.whl", hash = "sha256:70c86a047665d33dbd470dc6e8b62b9a40bbc5ddf622982279b3ef7ebaa5925e", size = 184563, upload-time = "2025-06-03T11:18:33.67Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/57/f662a931febea29cdffdbfd2f30c80802b1ed2f4a94ee8b2c38048f933ad/spacy_alignments-0.9.2-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:18f4f71a18086ffd436ba683c8ceb383270691899abc85624fa27f0b6cd7d670", size = 290847, upload-time = "2025-06-03T11:18:35.858Z" },
+    { url = "https://files.pythonhosted.org/packages/91/65/55b5ae5c3485394916737fdd6761d5e6a84c6654d141332f9541d5dcb6bd/spacy_alignments-0.9.2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:b9aa846f3d08e98632f0d0f2a2e91d94ab477b41c1d9c1808e7639c490f073d5", size = 286158, upload-time = "2025-06-03T11:18:37.628Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/2c/eb0e6945df3048f979c5092b79ddb1f9e910880ca0010e721cc7cc918de4/spacy_alignments-0.9.2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:614c01a3ea0d3c4fd26081572b20097b308899f60a69f04b756adc6f3d50afb7", size = 314078, upload-time = "2025-06-03T11:18:39.14Z" },
+    { url = "https://files.pythonhosted.org/packages/55/94/10b4855136d26e5806b1ebacb587b4fcfd6b95852d9428ff928c146e4bb3/spacy_alignments-0.9.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ab9ade930ef7a11dd50fd35b289cdd403d7386549ac3f8db75dafa88c9ea33e4", size = 313437, upload-time = "2025-06-03T11:18:40.574Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/3b/f03ff821d964d767f090e9d170cfe70b612af235ff939ede41497512f44a/spacy_alignments-0.9.2-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:cf10b36bda5f2e548dd18c784c4e8196f91752b09786c587990733b28a587b1d", size = 362190, upload-time = "2025-06-03T11:18:42.065Z" },
+    { url = "https://files.pythonhosted.org/packages/a4/3a/f853659555157ab17f8e1bf73dccfb23eed8b59ac5ea6d192ac81da4d905/spacy_alignments-0.9.2-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:43a013f75dbdd12e43536a5892d26ac4032126b3427fc0ec2ac73559b3d0e8c4", size = 374723, upload-time = "2025-06-03T11:18:43.905Z" },
+    { url = "https://files.pythonhosted.org/packages/59/ac/b491a94d78bc4a14887919a807c8dd3f853cde5b5cd2aeffadfe36f5c751/spacy_alignments-0.9.2-cp312-cp312-win_amd64.whl", hash = "sha256:ac2cd050afda5d365d23587931f6b4a505f4cf5a55d0f006f6d056e6b1ac7fe7", size = 184333, upload-time = "2025-06-03T11:18:45.902Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/e8/f22e90e8c0e0bf067001bbd6dafa83a8b89e0f6980a7c2289cba023f75f0/spacy_alignments-0.9.2-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:a590f3a49f448bfb4115670e0c509d3d09f85adf2c4f1ce82fe73452d5ccfa94", size = 290480, upload-time = "2025-06-03T11:18:47.423Z" },
+    { url = "https://files.pythonhosted.org/packages/e0/1b/cb943c939086dabe387f8447b73bf2983eede9f1d176bd512958f77b13ed/spacy_alignments-0.9.2-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:1d3a2d577adb6ea863d37b705bd80695ae3a79d5d73b115c15a7a351ef96809d", size = 285868, upload-time = "2025-06-03T11:18:48.771Z" },
+    { url = "https://files.pythonhosted.org/packages/81/a4/f92f37a38860962ffcd5207875acd6a9c2a714d1cd977cd0a63ca260ea31/spacy_alignments-0.9.2-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2a8ed5fe99aaa08767d477ce76c6406df1ee0250c6989f4327ef40b7598d0064", size = 314096, upload-time = "2025-06-03T11:18:50.707Z" },
+    { url = "https://files.pythonhosted.org/packages/df/a8/6f894f778cadece37913c18a0c67cdda1e89dff47d2da5f7903f9bec4f95/spacy_alignments-0.9.2-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e8024ca025cc2f77665f4e88e1e2073884b3b0271683f11be17376f41df0a8b3", size = 313465, upload-time = "2025-06-03T11:18:52.034Z" },
+    { url = "https://files.pythonhosted.org/packages/0a/16/ac084645d7829184bb63fca5ef887a1413d72e84cb1d0e72636f1e8ec7a8/spacy_alignments-0.9.2-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:19997ea93d0f0de09ccd521e48ff9f5d9372f370d8ed769383102ccbf5a4ed22", size = 362050, upload-time = "2025-06-03T11:18:54.039Z" },
+    { url = "https://files.pythonhosted.org/packages/51/6b/4eca24132721a47349c1a5016e37f6cc5611db2770ec9143a11ed24825ac/spacy_alignments-0.9.2-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:d1fb2ff29e2f29f442dec648a02eeaa7c1b56186273614c80b2e787088a843c6", size = 374688, upload-time = "2025-06-03T11:18:55.388Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/82/69f5cf10a37d3dcbb5f0efe4f2fee83a57c12c373df26eb87d05847df415/spacy_alignments-0.9.2-cp313-cp313-win_amd64.whl", hash = "sha256:ca8203615aee9f5bc746e58aee4069f3d887c10e2bfa53e7515b07dc3b910e97", size = 184413, upload-time = "2025-06-03T11:18:56.68Z" },
+]
+
 [[package]]
 name = "spacy-legacy"
 version = "3.0.12"
@@ -2299,6 +2333,43 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/67/3d/926db774c9c98acf66cb4ed7faf6c377746f3e00b84b700d0868b95d0712/spacy-loggers-1.0.5.tar.gz", hash = "sha256:d60b0bdbf915a60e516cc2e653baeff946f0cfc461b452d11a4d5458c6fe5f24", size = 20811, upload-time = "2023-09-11T12:26:52.323Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/33/78/d1a1a026ef3af911159398c939b1509d5c36fe524c7b644f34a5146c4e16/spacy_loggers-1.0.5-py3-none-any.whl", hash = "sha256:196284c9c446cc0cdb944005384270d775fdeaf4f494d8e269466cfa497ef645", size = 22343, upload-time = "2023-09-11T12:26:50.586Z" },
+]
+
+[[package]]
+name = "spacy-transformers"
+version = "1.3.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "spacy" },
+    { name = "spacy-alignments" },
+    { name = "srsly" },
+    { name = "torch" },
+    { name = "transformers" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/92/ce/1ab5eacd4bf216fce2c1cee347742a8addc9ee4006240f03d2de4e289507/spacy_transformers-1.3.9.tar.gz", hash = "sha256:f4050dfe3bf085aebc89ddb7841f7325778f101cde0d2c9952367c74e10fcb83", size = 49565, upload-time = "2025-05-26T16:12:03.707Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d2/f4/0a58b2d48c165a0d0b3f40570cd095ef6491624acd0a8aa68a49d2db0792/spacy_transformers-1.3.9-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:f05c8f83cb15c5c81b105b2c5216aa5264ec8436727a9dd54f6d7bc8517697ba", size = 171357, upload-time = "2025-05-26T16:11:21.293Z" },
+    { url = "https://files.pythonhosted.org/packages/82/65/9891d4302a3bfa151c161af79c76a61a1f788312fe4732865b14ce8c92a8/spacy_transformers-1.3.9-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:fde174c8a82af85586c29f0d6e1b8201c1d036b882dc77d8635b752f920bf822", size = 164218, upload-time = "2025-05-26T16:11:22.984Z" },
+    { url = "https://files.pythonhosted.org/packages/1b/8a/e07d5be4c15d73a805e6ea9cb5238d958dd1cbafddd916c3cd47739acbcb/spacy_transformers-1.3.9-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1c2669bac06ff3f6709418561018454aaaaae73bfdc903b8670ce3f0a634dbd6", size = 749487, upload-time = "2025-05-26T16:11:24.202Z" },
+    { url = "https://files.pythonhosted.org/packages/bf/d7/1a7ec23ee91a4d32553ff3315abc49afc9ce934a1c89eb5ca4f7d228ea93/spacy_transformers-1.3.9-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5ffa6c6b248da52230e9c1e5fe6447b02ef06389202b4b65338183bd71c56997", size = 758753, upload-time = "2025-05-26T16:11:25.558Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/04/ef5e323f66e1b88aa4e3006eaad0e3be67040565a29a5af50e2f746c369b/spacy_transformers-1.3.9-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:92b87b52dd5c5fae7e2c7721bf95ae327475b1dbde8614034ab3a76480a01eff", size = 1634288, upload-time = "2025-05-26T16:11:26.966Z" },
+    { url = "https://files.pythonhosted.org/packages/92/0d/7a2cb0dbd695e6314e05c926ed219276d2846979e33454aa972684ac3f8c/spacy_transformers-1.3.9-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:2b59535ed40c8d5f92f038e7d33cf4de957c9d509720d02f1d07275965e9f127", size = 1697457, upload-time = "2025-05-26T16:11:28.789Z" },
+    { url = "https://files.pythonhosted.org/packages/b0/ec/aa350ee046df53b894deb1d26acafc1ca8e74c9c043c6c7be6ee0eb45702/spacy_transformers-1.3.9-cp311-cp311-win_amd64.whl", hash = "sha256:9a2274a71a4ef356900b39c10d85d49491a769093485614ee12f8b9f78340ba7", size = 342614, upload-time = "2025-05-26T16:11:30.885Z" },
+    { url = "https://files.pythonhosted.org/packages/72/ab/87fd11c199f6b64e521fadf3ba6e3d76ddd64e68fb0a3ece7e6942b0de6f/spacy_transformers-1.3.9-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:56a38f42abfbdfdc24b826d7ace47d3bfbe003eb918ec04bf5a5ff2abd5e92c8", size = 171690, upload-time = "2025-05-26T16:11:33.019Z" },
+    { url = "https://files.pythonhosted.org/packages/f1/bb/d5575d959a36da20dbeaec210da2bd96170ddf0dc6671ec3633a96a8ef47/spacy_transformers-1.3.9-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:75da186331c1ff77234326cb2f79098bc6780251a6d4e0f02523080ccdcf3e4c", size = 163915, upload-time = "2025-05-26T16:11:34.188Z" },
+    { url = "https://files.pythonhosted.org/packages/98/bd/71ec241b98ee426577371f9af12ac7aca0c24b3174545421f424b11ba94a/spacy_transformers-1.3.9-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0aa07948515283ad3059e0f64d3b799dc41d21e8f057c2fc15f2d49eb69047d1", size = 786452, upload-time = "2025-05-26T16:11:35.824Z" },
+    { url = "https://files.pythonhosted.org/packages/2f/4b/8da58bbfc07634439740afc7a1c7ff99ae9f4dbcd4278b8a5dc9d48b9d13/spacy_transformers-1.3.9-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:eb70d1213f8112bab50d5ffa1e586f706bde3791d43abb5af80f187c85fb382e", size = 795808, upload-time = "2025-05-26T16:11:37.84Z" },
+    { url = "https://files.pythonhosted.org/packages/ca/4f/b610a04504643c93027b24ddd7f03293126bfbe3b3b40761fb624614f4ca/spacy_transformers-1.3.9-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:2b893d3b8fe329de71a6f776ebb50938827ddbe04b3167c3e22804a16fa91e52", size = 1651266, upload-time = "2025-05-26T16:11:39.486Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/58/5e83eb08b833b509cec8d7bfa45da346bc0546195f2fa3cbfdca90800298/spacy_transformers-1.3.9-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:a34e969283474cd25b51a563a6fad925c70333319277335ea97c1c6a6f52e4dd", size = 1722390, upload-time = "2025-05-26T16:11:41.442Z" },
+    { url = "https://files.pythonhosted.org/packages/60/90/e6b05fcc975a2f9f9672f31154ca39861a0811e9b2c4c9d4fbb7fbba2e6f/spacy_transformers-1.3.9-cp312-cp312-win_amd64.whl", hash = "sha256:832f0517c6a6dda0a82a402d47d5f1e9d364fa63959075b1e855753b31831283", size = 341470, upload-time = "2025-05-26T16:11:42.792Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/08/84d992e5e958c0f93c9b3898d4bcbed16da9bf7c163ca9a14e010fac3295/spacy_transformers-1.3.9-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:1e8a08a4a6e091b02b83e5e980ef84c4cd9e60770155f134c5bf881863de1700", size = 170879, upload-time = "2025-05-26T16:11:44.143Z" },
+    { url = "https://files.pythonhosted.org/packages/a6/b1/f89f8bcaeb4a70ccd5a58a31857c5fb53b71f37444bc4f5a778773030703/spacy_transformers-1.3.9-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:89c6d8bb66afcb369d99dd662136e52e1deebb0e7aac4fa18bdf1fa27cbe1bf3", size = 163313, upload-time = "2025-05-26T16:11:45.315Z" },
+    { url = "https://files.pythonhosted.org/packages/f2/56/f538ffc9574a8266a0ebd20ccd6812d1317bbfcdc1736edf605165e13370/spacy_transformers-1.3.9-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:71f845d7003f9f8ff805d678f7fe6674feb02b16755c54c05430603f1f80aef4", size = 771924, upload-time = "2025-05-26T16:11:46.572Z" },
+    { url = "https://files.pythonhosted.org/packages/0d/91/105e5977a1455286f380d061c3881a2cb2f2ff18c61fee556dd399165722/spacy_transformers-1.3.9-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f2fd731fd9297f9d39ec770894e5c5bafb564900e54aecd4d2336bdd60f152fa", size = 779567, upload-time = "2025-05-26T16:11:47.986Z" },
+    { url = "https://files.pythonhosted.org/packages/1c/ad/6ee6522605d4539f94143de8521fee592440f365f701780a5450eabf8bbc/spacy_transformers-1.3.9-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:d87a74bb2d111ca61a2c5e1dbe6e07f91c5c9a3adf8758c15a3f8b53ed80cc59", size = 1646920, upload-time = "2025-05-26T16:11:49.299Z" },
+    { url = "https://files.pythonhosted.org/packages/09/36/2285f981e33333e74bace0f45c976956bcac05252ffc0655780fba73a638/spacy_transformers-1.3.9-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:f02af031f10cd629e77cc80bda7abc5fff66f424e0969ca4f9c4614b53b6aa10", size = 1716776, upload-time = "2025-05-26T16:11:51.107Z" },
+    { url = "https://files.pythonhosted.org/packages/80/49/6a4c850e179dd7dedf8c146d8cd82c57b3278d4ecd6bd16e562551ffa564/spacy_transformers-1.3.9-cp313-cp313-win_amd64.whl", hash = "sha256:483a5cc24293254b334c776327f8ca323fd9c39bb0e477f6171595315d247631", size = 341379, upload-time = "2025-05-26T16:11:52.427Z" },
 ]
 
 [[package]]
@@ -2630,7 +2701,7 @@ wheels = [
 
 [[package]]
 name = "transformers"
-version = "4.52.4"
+version = "4.49.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "filelock" },
@@ -2644,9 +2715,9 @@ dependencies = [
     { name = "tokenizers" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/da/a9/275037087f9d846580b02f2d7cae0e0a6955d46f84583d0151d6227bd416/transformers-4.52.4.tar.gz", hash = "sha256:aff3764441c1adc192a08dba49740d3cbbcb72d850586075aed6bd89b98203e6", size = 8945376, upload-time = "2025-05-30T09:17:17.947Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/79/50/46573150944f46df8ec968eda854023165a84470b42f69f67c7d475dabc5/transformers-4.49.0.tar.gz", hash = "sha256:7e40e640b5b8dc3f48743f5f5adbdce3660c82baafbd3afdfc04143cdbd2089e", size = 8610952, upload-time = "2025-02-17T15:19:03.614Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/96/f2/25b27b396af03d5b64e61976b14f7209e2939e9e806c10749b6d277c273e/transformers-4.52.4-py3-none-any.whl", hash = "sha256:203f5c19416d5877e36e88633943761719538a25d9775977a24fe77a1e5adfc7", size = 10460375, upload-time = "2025-05-30T09:17:14.477Z" },
+    { url = "https://files.pythonhosted.org/packages/20/37/1f29af63e9c30156a3ed6ebc2754077016577c094f31de7b2631e5d379eb/transformers-4.49.0-py3-none-any.whl", hash = "sha256:6b4fded1c5fee04d384b1014495b4235a2b53c87503d7d592423c06128cbbe03", size = 9970275, upload-time = "2025-02-17T15:18:58.814Z" },
 ]
 
 [[package]]

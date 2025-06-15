@@ -8,9 +8,20 @@ translator:
   base_url: "http://localhost:11434/api"  # Ollama API endpoint
   temperature: 0.3            # Lower for more consistent translations
   max_tokens: 4096            # Maximum tokens per request
+  timeout: 300                # Request timeout in seconds
 
-source_language: auto         # auto-detect or specify (en, zh, etc.)
-target_language: ja           # Japanese by default
+# Translation processing settings
+translation:
+  engine: ollama              # Deprecated - use translator.engine instead
+  use_chunked: true           # Use chunked translation for better performance
+  chunk_size: 1500            # Maximum characters per chunk
+  chunk_overlap: 150          # Overlap between chunks for context
+  source_language: auto       # Source language (auto-detect)
+  target_language: ja         # Target language
+
+# Legacy settings (use translation.source_language and translation.target_language instead)
+# source_language: auto         # auto-detect or specify (en, zh, etc.)
+# target_language: ja           # Japanese by default
 preserve_format: true         # Preserve original formatting
 include_source_term: true     # Include source term in parentheses
 
@@ -19,7 +30,7 @@ use_ocr: true                 # Enable OCR for image PDFs
 ocr_languages: ["en", "ja"]   # Languages for OCR
 
 # Layout analysis
-layout_analysis: true         # Enable layout detection
+layout_analysis: false        # Enable layout detection (disabled for testing)
 skip_elements:                # Elements to skip translation
   - table
   - figure
