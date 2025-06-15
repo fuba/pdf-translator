@@ -145,12 +145,15 @@ class TestTranslationPipeline:
         mock_term_miner_class.return_value = mock_term_miner
 
         mock_translator = Mock()
-        mock_translator.translate.side_effect = ["これはテスト文書です。", "機械学習は重要です。"]
+        mock_translator.translate.side_effect = [
+            Mock(translated_text="これはテスト文書です。", success=True),
+            Mock(translated_text="機械学習は重要です。", success=True),
+        ]
         mock_translator_class.return_value = mock_translator
 
         mock_post_processor = Mock()
-        mock_post_processor.process.side_effect = (
-            lambda text, terms, processed: f"[処理済み] {text}"
+        mock_post_processor.process.side_effect = lambda text, terms: Mock(
+            processed_text=f"[処理済み] {text}", success=True
         )
         mock_post_processor_class.return_value = mock_post_processor
 
@@ -172,7 +175,7 @@ class TestTranslationPipeline:
         mock_term_miner.extract_terms.assert_called()
         mock_translator.translate.assert_called()
         mock_post_processor.process.assert_called()
-        mock_renderer.render.assert_called_once()
+        mock_renderer.render_from_pages.assert_called_once()
 
     @patch("pdf_translator.core.pipeline.PDFExtractor")
     def test_translate_with_page_filter(self, mock_extractor_class, mock_config, sample_document):
@@ -187,11 +190,23 @@ class TestTranslationPipeline:
         mock_result.terms = {}  # Empty terms for this test
         mock_term_miner.extract_terms.return_value = mock_result
 
+        # Mock translator that returns proper translation results
+        mock_translator = Mock()
+        mock_translator.translate.return_value = Mock(
+            translated_text="翻訳されたテキスト", success=True
+        )
+
+        # Mock post processor
+        mock_post_processor = Mock()
+        mock_post_processor.process.return_value = Mock(
+            processed_text="処理済みテキスト", success=True
+        )
+
         with patch.multiple(
             "pdf_translator.core.pipeline",
             TermMiner=Mock(return_value=mock_term_miner),
-            OllamaTranslator=Mock(),
-            PostProcessor=Mock(),
+            OllamaTranslator=Mock(return_value=mock_translator),
+            PostProcessor=Mock(return_value=mock_post_processor),
             DocumentRenderer=Mock(),
         ):
             pipeline = TranslationPipeline(mock_config)

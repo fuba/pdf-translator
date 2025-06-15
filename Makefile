@@ -54,7 +54,7 @@ run-ollama:
 dev: dev-install
 	@echo "Development environment ready!"
 
-check: lint type-check
+check: lint type-check test
 	@echo "All checks passed!"
 
 # Quick translation test

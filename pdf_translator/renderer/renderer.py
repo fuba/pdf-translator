@@ -3,7 +3,7 @@
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import jinja2
 from markupsafe import Markup
@@ -48,15 +48,19 @@ class RenderConfig:
 class DocumentRenderer:
     """Render translated documents to various output formats."""
 
-    def __init__(self, config: Optional[ConfigManager] = None):
+    def __init__(self, config: Optional[Union[ConfigManager, RenderConfig]] = None):
         """Initialize document renderer.
 
         Args:
-            config: ConfigManager instance
+            config: ConfigManager or RenderConfig instance
 
         """
-        self.config = config or ConfigManager()
-        self.render_config = RenderConfig()
+        if isinstance(config, RenderConfig):
+            self.render_config = config
+            self.config = ConfigManager()
+        else:
+            self.config = config or ConfigManager()
+            self.render_config = RenderConfig()
 
         # Setup Jinja2 environment for HTML templates
         self.jinja_env = jinja2.Environment(

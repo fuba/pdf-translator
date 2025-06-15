@@ -79,7 +79,7 @@ class TranslationPipeline:
                     else:
                         # If terms is a list, just add the terms
                         all_terms.update(
-                            term if isinstance(term, str) else term.original
+                            term if isinstance(term, str) else term.text
                             for term in terms_result.terms
                         )
 
@@ -211,11 +211,11 @@ class TranslationPipeline:
             else:
                 # Convert list to dict if needed
                 self.technical_terms = {
-                    term.original: term.translation
-                    if hasattr(term, "translation")
-                    else term.original
+                    term.text: term.translations.get("ja", term.text)
+                    if hasattr(term, "translations")
+                    else term.text
                     for term in terms_result.terms
-                    if hasattr(term, "original")
+                    if hasattr(term, "text")
                 }
         else:
             self.technical_terms = {}

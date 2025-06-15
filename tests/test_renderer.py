@@ -148,7 +148,7 @@ class TestDocumentRenderer:
 
     def test_init_default(self, renderer):
         """Test renderer initialization with defaults."""
-        assert renderer.config.output_format == "markdown"
+        assert renderer.render_config.output_format == "markdown"
         assert renderer.jinja_env is not None
         assert renderer.html_template is not None
 
@@ -156,7 +156,7 @@ class TestDocumentRenderer:
         """Test renderer initialization with custom config."""
         config = RenderConfig(output_format="html")
         renderer = DocumentRenderer(config)
-        assert renderer.config.output_format == "html"
+        assert renderer.render_config.output_format == "html"
 
     def test_render_markdown(self, renderer, sample_document, tmp_path):
         """Test Markdown rendering."""
@@ -230,7 +230,7 @@ class TestDocumentRenderer:
 
     def test_render_unsupported_format(self, renderer, sample_document, tmp_path):
         """Test rendering with unsupported format."""
-        renderer.config.output_format = "pdf"
+        renderer.render_config.output_format = "pdf"
         output_path = tmp_path / "output.pdf"
 
         with pytest.raises(ValueError, match="Unsupported output format"):

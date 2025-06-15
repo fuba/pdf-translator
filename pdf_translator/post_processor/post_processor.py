@@ -3,7 +3,7 @@
 import logging
 import re
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from pdf_translator.config.manager import ConfigManager
 from pdf_translator.term_miner import Term
@@ -58,9 +58,13 @@ class PostProcessingResult:
 class PostProcessor:
     """Post-process translated text with term annotations and formatting."""
 
-    def __init__(self, config: Optional[ConfigManager] = None):
-        self.config = config or ConfigManager()
-        self.processor_config = PostProcessorConfig()
+    def __init__(self, config: Optional[Union[ConfigManager, PostProcessorConfig]] = None):
+        if isinstance(config, PostProcessorConfig):
+            self.processor_config = config
+            self.config = None
+        else:
+            self.config = config or ConfigManager()
+            self.processor_config = PostProcessorConfig()
         self._annotation_count: Dict[str, int] = {}
 
     def process(

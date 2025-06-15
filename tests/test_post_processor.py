@@ -142,13 +142,13 @@ class TestPostProcessor:
 
     def test_min_term_length_filter(self):
         """Test filtering terms by minimum length."""
-        config = PostProcessorConfig(min_term_length=5)
+        config = PostProcessorConfig(min_term_length=10)
         processor = PostProcessor(config)
 
         translated_text = "AIと機械学習について説明します。"
         term_dict = {
-            "AI": "AI",  # Too short, should be filtered
-            "machine learning": "機械学習",  # Long enough
+            "AI": "AI",  # 2 chars, too short when min_term_length=10
+            "machine learning": "機械学習",  # 16 chars, long enough
         }
 
         result = processor.process(translated_text, term_dict)
