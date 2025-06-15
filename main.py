@@ -8,6 +8,7 @@ import argparse
 import logging
 import sys
 from pathlib import Path
+from typing import List, Optional
 
 from pdf_translator.config.manager import ConfigManager
 from pdf_translator.core.pipeline import TranslationPipeline
@@ -172,6 +173,81 @@ def generate_output_path(input_path: Path, output_format: str) -> Path:
     return input_path.parent / output_name
 
 
+def setup_configuration(args: argparse.Namespace) -> ConfigManager:
+    """Set up configuration from arguments."""
+    config = ConfigManager(args.config)
+
+    # Override config with command line arguments
+    if args.engine:
+        config.set("translation.engine", args.engine)
+    if args.model:
+        engine = args.engine or config.get("translation.engine")
+        config.set(f"translation.{engine}.model", args.model)
+    if args.format:
+        config.set("output.format", args.format)
+    if args.source_lang:
+        config.set("translation.source_language", args.source_lang)
+    if args.target_lang:
+        config.set("translation.target_language", args.target_lang)
+
+    # Set processing flags
+    if args.ocr:
+        config.set("extraction.force_ocr", True)
+    if args.no_ocr:
+        config.set("extraction.enable_ocr", False)
+    if args.no_terms:
+        config.set("term_extraction.enabled", False)
+    if args.no_layout:
+        config.set("layout.enabled", False)
+
+    return config
+
+
+def run_dry_run_analysis(
+    pipeline: "TranslationPipeline", input_path: str, pages: Optional[List[int]], quiet: bool
+) -> None:
+    """Run dry run analysis and display results."""
+    if not quiet:
+        print("\n🔍 Analyzing PDF (dry run)...")
+
+    result = pipeline.analyze(input_path, pages=pages)
+
+    print("\n📊 Analysis Results:")
+    print(f"  Pages: {result['total_pages']}")
+    print(f"  Text pages: {result['text_pages']}")
+    print(f"  Image pages: {result['image_pages']}")
+    print(f"  Total characters: {result['total_chars']}")
+
+    if result.get("terms"):
+        print(f"  Technical terms found: {len(result['terms'])}")
+        print("  Sample terms:")
+        for term in result["terms"][:5]:
+            print(f"    - {term}")
+
+
+def run_full_translation(
+    pipeline: "TranslationPipeline",
+    input_path: str,
+    output_path: str,
+    pages: Optional[List[int]],
+    quiet: bool,
+) -> None:
+    """Run full translation and display results."""
+    if not quiet:
+        print("\n🔄 Starting translation...")
+
+    result = pipeline.translate(input_path, output_path, pages=pages)
+
+    if not quiet:
+        print("\n✅ Translation completed!")
+        print(f"📄 Output saved to: {output_path}")
+        print(f"⏱️  Time: {result['processing_time']:.1f}s")
+        print(f"📊 Pages processed: {result['pages_processed']}")
+
+        if result.get("terms_extracted"):
+            print(f"🔤 Terms extracted: {result['terms_extracted']}")
+
+
 def main() -> int:
     """Execute main entry point."""
     try:
@@ -188,31 +264,8 @@ def main() -> int:
         setup_logging(level=log_level)
         logger = logging.getLogger(__name__)
 
-        # Load configuration
-        config = ConfigManager(args.config)
-
-        # Override config with command line arguments
-        if args.engine:
-            config.set("translation.engine", args.engine)
-        if args.model:
-            engine = args.engine or config.get("translation.engine")
-            config.set(f"translation.{engine}.model", args.model)
-        if args.format:
-            config.set("output.format", args.format)
-        if args.source_lang:
-            config.set("translation.source_language", args.source_lang)
-        if args.target_lang:
-            config.set("translation.target_language", args.target_lang)
-
-        # Set processing flags
-        if args.ocr:
-            config.set("extraction.force_ocr", True)
-        if args.no_ocr:
-            config.set("extraction.enable_ocr", False)
-        if args.no_terms:
-            config.set("term_extraction.enabled", False)
-        if args.no_layout:
-            config.set("layout.enabled", False)
+        # Setup configuration
+        config = setup_configuration(args)
 
         # Parse page range
         pages = parse_page_range(args.pages) if args.pages else None
@@ -240,38 +293,9 @@ def main() -> int:
         pipeline = TranslationPipeline(config)
 
         if args.dry_run:
-            # Dry run - only analyze
-            if not args.quiet:
-                print("\n🔍 Analyzing PDF (dry run)...")
-
-            result = pipeline.analyze(str(input_path), pages=pages)
-
-            print("\n📊 Analysis Results:")
-            print(f"  Pages: {result['total_pages']}")
-            print(f"  Text pages: {result['text_pages']}")
-            print(f"  Image pages: {result['image_pages']}")
-            print(f"  Total characters: {result['total_chars']}")
-
-            if result.get("terms"):
-                print(f"  Technical terms found: {len(result['terms'])}")
-                print("  Sample terms:")
-                for term in result["terms"][:5]:
-                    print(f"    - {term}")
+            run_dry_run_analysis(pipeline, str(input_path), pages, args.quiet)
         else:
-            # Full translation
-            if not args.quiet:
-                print("\n🔄 Starting translation...")
-
-            result = pipeline.translate(str(input_path), str(output_path), pages=pages)
-
-            if not args.quiet:
-                print("\n✅ Translation completed!")
-                print(f"📄 Output saved to: {output_path}")
-                print(f"⏱️  Time: {result['processing_time']:.1f}s")
-                print(f"📊 Pages processed: {result['pages_processed']}")
-
-                if result.get("terms_extracted"):
-                    print(f"🔤 Terms extracted: {result['terms_extracted']}")
+            run_full_translation(pipeline, str(input_path), str(output_path), pages, args.quiet)
 
         return 0
     except KeyboardInterrupt:
