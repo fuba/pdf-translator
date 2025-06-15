@@ -174,7 +174,7 @@ class TestEndToEndIntegration:
         invalid_pdf = tmp_path / "invalid.pdf"
         invalid_pdf.write_text("This is not a PDF")
 
-        with pytest.raises(Exception):
+        with pytest.raises((OSError, ValueError, RuntimeError)):
             pipeline.analyze(str(invalid_pdf))
 
     def test_error_handling_missing_file(self, test_config):
