@@ -7,7 +7,10 @@ from pdf_translator.config.manager import ConfigManager
 from pdf_translator.core.pipeline import TranslationPipeline
 
 # Setup logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
 
 def test_analysis_only():
     """Test only PDF analysis."""
@@ -22,6 +25,7 @@ def test_analysis_only():
     except Exception as e:
         print(f"Analysis failed: {e}")
         return False
+
 
 def test_extractor_only():
     """Test only PDF extraction."""
@@ -40,6 +44,7 @@ def test_extractor_only():
         print(f"Extraction failed: {e}")
         return False
 
+
 def test_translator_only():
     """Test only translation."""
     print("=== Testing Translation Only ===")
@@ -55,6 +60,7 @@ def test_translator_only():
     except Exception as e:
         print(f"Translation failed: {e}")
         return False
+
 
 def test_renderer_only():
     """Test only rendering."""
@@ -74,7 +80,7 @@ def test_renderer_only():
         height=842,
         text_blocks=[],
         raw_text="This is a test.",
-        has_images=False
+        has_images=False,
     )
     translated_texts = {0: "これはテストです。"}
 
@@ -86,6 +92,7 @@ def test_renderer_only():
     except Exception as e:
         print(f"Rendering failed: {e}")
         return False
+
 
 if __name__ == "__main__":
     print("Starting component tests...\n")

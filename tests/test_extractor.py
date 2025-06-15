@@ -254,6 +254,7 @@ class TestPageInfo:
         """Test _is_image_based_page method."""
         extractor = PDFExtractor()
         import fitz
+
         doc = fitz.open(sample_pdf)
 
         # Test with text page (should be False)
@@ -271,6 +272,7 @@ class TestPageInfo:
 
         # Create PDF with mock image page
         import fitz
+
         pdf_path = tmp_path / "test_ocr.pdf"
         doc = fitz.open()
         doc.new_page()
@@ -278,8 +280,8 @@ class TestPageInfo:
         doc.close()
 
         # Mock the OCR functionality
-        with patch.object(extractor, '_is_image_based_page', return_value=True):
-            with patch.object(extractor, '_extract_page_with_ocr') as mock_ocr:
+        with patch.object(extractor, "_is_image_based_page", return_value=True):
+            with patch.object(extractor, "_extract_page_with_ocr") as mock_ocr:
                 mock_page_info = PageInfo(
                     page_num=0,
                     width=595.0,

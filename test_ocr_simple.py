@@ -9,6 +9,7 @@ from src.extractor import PDFExtractor
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def main():
     """Test basic OCR functionality."""
     # Test with sample PDFs
@@ -41,9 +42,10 @@ def main():
 
         # Show first few text blocks
         for i, block in enumerate(page.text_blocks[:3]):
-            logger.info(f"  - Block {i+1}: {block.text[:50]}...")
+            logger.info(f"  - Block {i + 1}: {block.text[:50]}...")
 
     logger.info("\nTest completed!")
+
 
 if __name__ == "__main__":
     main()

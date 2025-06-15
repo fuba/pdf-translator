@@ -38,29 +38,27 @@ Examples:
 
   # Process specific pages only
   %(prog)s input.pdf --pages 1-10
-        """
+        """,
     )
 
     # Required arguments
-    parser.add_argument(
-        "input",
-        type=str,
-        help="Input PDF file path"
-    )
+    parser.add_argument("input", type=str, help="Input PDF file path")
 
     # Optional arguments
     parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         type=str,
         default=None,
-        help="Output file path (default: auto-generated based on input)"
+        help="Output file path (default: auto-generated based on input)",
     )
 
     parser.add_argument(
-        "-c", "--config",
+        "-c",
+        "--config",
         type=str,
         default="config/config.yml",
-        help="Configuration file path (default: config/config.yml)"
+        help="Configuration file path (default: config/config.yml)",
     )
 
     parser.add_argument(
@@ -68,14 +66,11 @@ Examples:
         type=str,
         choices=["ollama", "openai"],
         default=None,
-        help="Translation engine to use (default: from config)"
+        help="Translation engine to use (default: from config)",
     )
 
     parser.add_argument(
-        "--model",
-        type=str,
-        default=None,
-        help="Model name for translation (default: from config)"
+        "--model", type=str, default=None, help="Model name for translation (default: from config)"
     )
 
     parser.add_argument(
@@ -83,77 +78,46 @@ Examples:
         type=str,
         choices=["html", "markdown"],
         default=None,
-        help="Output format (default: from config)"
+        help="Output format (default: from config)",
     )
 
     parser.add_argument(
-        "--source-lang",
-        type=str,
-        default=None,
-        help="Source language code (default: auto-detect)"
+        "--source-lang", type=str, default=None, help="Source language code (default: auto-detect)"
     )
 
     parser.add_argument(
-        "--target-lang",
-        type=str,
-        default=None,
-        help="Target language code (default: ja)"
+        "--target-lang", type=str, default=None, help="Target language code (default: ja)"
     )
 
     parser.add_argument(
-        "--pages",
-        type=str,
-        default=None,
-        help="Page range to process (e.g., '1-10', '1,3,5-7')"
+        "--pages", type=str, default=None, help="Page range to process (e.g., '1-10', '1,3,5-7')"
     )
 
     parser.add_argument(
-        "--ocr",
-        action="store_true",
-        help="Force OCR processing even for text PDFs"
+        "--ocr", action="store_true", help="Force OCR processing even for text PDFs"
     )
 
-    parser.add_argument(
-        "--no-ocr",
-        action="store_true",
-        help="Disable OCR processing"
-    )
+    parser.add_argument("--no-ocr", action="store_true", help="Disable OCR processing")
+
+    parser.add_argument("--no-terms", action="store_true", help="Disable technical term extraction")
 
     parser.add_argument(
-        "--no-terms",
-        action="store_true",
-        help="Disable technical term extraction"
+        "--no-layout", action="store_true", help="Disable layout analysis (simple linear output)"
     )
 
-    parser.add_argument(
-        "--no-layout",
-        action="store_true",
-        help="Disable layout analysis (simple linear output)"
-    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
 
     parser.add_argument(
-        "-v", "--verbose",
-        action="store_true",
-        help="Enable verbose logging"
-    )
-
-    parser.add_argument(
-        "-q", "--quiet",
-        action="store_true",
-        help="Suppress all output except errors"
+        "-q", "--quiet", action="store_true", help="Suppress all output except errors"
     )
 
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Analyze PDF without translation (useful for testing)"
+        help="Analyze PDF without translation (useful for testing)",
     )
 
-    parser.add_argument(
-        "--version",
-        action="version",
-        version="%(prog)s 0.1.0"
-    )
+    parser.add_argument("--version", action="version", version="%(prog)s 0.1.0")
 
     return parser.parse_args()
 
@@ -184,12 +148,12 @@ def validate_input(args: argparse.Namespace) -> None:
 def parse_page_range(page_range: str) -> list[int]:
     """Parse page range string into list of page numbers."""
     pages = []
-    parts = page_range.split(',')
+    parts = page_range.split(",")
 
     for part in parts:
         part = part.strip()
-        if '-' in part:
-            start, end = part.split('-', 1)
+        if "-" in part:
+            start, end = part.split("-", 1)
             start = int(start.strip())
             end = int(end.strip())
             if start > end:
@@ -218,8 +182,8 @@ def main() -> int:
         validate_input(args)
 
         # Setup logging
-        log_level = logging.WARNING if args.quiet else (
-            logging.DEBUG if args.verbose else logging.INFO
+        log_level = (
+            logging.WARNING if args.quiet else (logging.DEBUG if args.verbose else logging.INFO)
         )
         setup_logging(level=log_level)
         logger = logging.getLogger(__name__)
@@ -231,7 +195,7 @@ def main() -> int:
         if args.engine:
             config.set("translation.engine", args.engine)
         if args.model:
-            engine = args.engine or config.get('translation.engine')
+            engine = args.engine or config.get("translation.engine")
             config.set(f"translation.{engine}.model", args.model)
         if args.format:
             config.set("output.format", args.format)
@@ -255,8 +219,10 @@ def main() -> int:
 
         # Generate output path if not specified
         input_path = Path(args.input)
-        output_path = Path(args.output) if args.output else generate_output_path(
-            input_path, config.get("output.format", "html")
+        output_path = (
+            Path(args.output)
+            if args.output
+            else generate_output_path(input_path, config.get("output.format", "html"))
         )
 
         # Log configuration
@@ -286,21 +252,17 @@ def main() -> int:
             print(f"  Image pages: {result['image_pages']}")
             print(f"  Total characters: {result['total_chars']}")
 
-            if result.get('terms'):
+            if result.get("terms"):
                 print(f"  Technical terms found: {len(result['terms'])}")
                 print("  Sample terms:")
-                for term in result['terms'][:5]:
+                for term in result["terms"][:5]:
                     print(f"    - {term}")
         else:
             # Full translation
             if not args.quiet:
                 print("\n🔄 Starting translation...")
 
-            result = pipeline.translate(
-                str(input_path),
-                str(output_path),
-                pages=pages
-            )
+            result = pipeline.translate(str(input_path), str(output_path), pages=pages)
 
             if not args.quiet:
                 print("\n✅ Translation completed!")
@@ -308,7 +270,7 @@ def main() -> int:
                 print(f"⏱️  Time: {result['processing_time']:.1f}s")
                 print(f"📊 Pages processed: {result['pages_processed']}")
 
-                if result.get('terms_extracted'):
+                if result.get("terms_extracted"):
                     print(f"🔤 Terms extracted: {result['terms_extracted']}")
 
         return 0

@@ -32,7 +32,7 @@ class TextBlock:
             width=self.width,
             height=self.height,
             font_size=self.font_size,
-            font_name=self.font_name
+            font_name=self.font_name,
         )
 
 
@@ -93,6 +93,8 @@ class Page:
 
     def __repr__(self) -> str:
         """String representation."""
-        return (f"Page(number={self.number}, "
-                f"text_blocks={len(self.text_blocks)}, "
-                f"images={len(self.images)})")
+        return (
+            f"Page(number={self.number}, "
+            f"text_blocks={len(self.text_blocks)}, "
+            f"images={len(self.images)})"
+        )

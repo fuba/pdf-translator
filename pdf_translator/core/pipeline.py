@@ -28,7 +28,9 @@ class TranslationPipeline:
 
         # Initialize components
         self.extractor = PDFExtractor(config)
-        self.layout_analyzer = LayoutAnalyzer(config) if config.get("layout.enabled", True) else None
+        self.layout_analyzer = (
+            LayoutAnalyzer(config) if config.get("layout.enabled", True) else None
+        )
         self.term_miner = TermMiner(config) if config.get("term_extraction.enabled", True) else None
         # Create translator based on engine type
         engine = config.get("translation.engine", "ollama")
@@ -70,14 +72,16 @@ class TranslationPipeline:
             if self.term_miner and page.has_text:
                 page_text = "\n".join(block.text for block in page.text_blocks)
                 terms_result = self.term_miner.extract_terms(page_text)
-                if hasattr(terms_result, 'terms') and terms_result.terms:
+                if hasattr(terms_result, "terms") and terms_result.terms:
                     # Extract term keys if terms is a dict
                     if isinstance(terms_result.terms, dict):
                         all_terms.update(terms_result.terms.keys())
                     else:
                         # If terms is a list, just add the terms
-                        all_terms.update(term if isinstance(term, str) else term.original
-                                       for term in terms_result.terms)
+                        all_terms.update(
+                            term if isinstance(term, str) else term.original
+                            for term in terms_result.terms
+                        )
 
         processing_time = time.time() - start_time
 
@@ -88,14 +92,11 @@ class TranslationPipeline:
             "total_chars": total_chars,
             "terms": list(all_terms),
             "processing_time": processing_time,
-            "metadata": document.metadata
+            "metadata": document.metadata,
         }
 
     def translate(
-        self,
-        input_path: str,
-        output_path: str,
-        pages: Optional[List[int]] = None
+        self, input_path: str, output_path: str, pages: Optional[List[int]] = None
     ) -> Dict[str, Any]:
         """Translate PDF and save result."""
         self.logger.info(f"Starting translation: {input_path} -> {output_path}")
@@ -126,8 +127,8 @@ class TranslationPipeline:
                 "translated": True,
                 "translation_engine": self.config.get("translation.engine"),
                 "source_language": self.config.get("translation.source_language", "auto"),
-                "target_language": self.config.get("translation.target_language", "ja")
-            }
+                "target_language": self.config.get("translation.target_language", "ja"),
+            },
         )
 
         # Step 5: Render output
@@ -145,13 +146,15 @@ class TranslationPipeline:
 
             text_blocks = []
             for block in page.text_blocks:
-                text_blocks.append(ExtractorTextBlock(
-                    text=block.text,
-                    bbox=(block.x, block.y, block.x + block.width, block.y + block.height),
-                    page_num=page.number - 1,  # 0-based indexing
-                    font_size=getattr(block, 'font_size', 12.0),
-                    font_name=getattr(block, 'font_name', 'Unknown')
-                ))
+                text_blocks.append(
+                    ExtractorTextBlock(
+                        text=block.text,
+                        bbox=(block.x, block.y, block.x + block.width, block.y + block.height),
+                        page_num=page.number - 1,  # 0-based indexing
+                        font_size=getattr(block, "font_size", 12.0),
+                        font_name=getattr(block, "font_name", "Unknown"),
+                    )
+                )
 
             page_info = PageInfo(
                 page_num=i,
@@ -159,7 +162,7 @@ class TranslationPipeline:
                 height=page.height,
                 text_blocks=text_blocks,
                 raw_text=page.text_content,
-                has_images=page.has_images
+                has_images=page.has_images,
             )
             page_infos.append(page_info)
 
@@ -169,7 +172,7 @@ class TranslationPipeline:
             translated_texts[i] = translated_text
 
             # Get layout regions if available
-            if hasattr(self, 'layout_results') and i in self.layout_results:
+            if hasattr(self, "layout_results") and i in self.layout_results:
                 layout_regions[i] = self.layout_results[i]
 
         # Render using the appropriate method
@@ -186,7 +189,7 @@ class TranslationPipeline:
             "processing_time": processing_time,
             "pages_processed": pages_processed,
             "terms_extracted": terms_extracted,
-            "output_path": output_path
+            "output_path": output_path,
         }
 
     def _extract_document_terms(self, document: Document) -> None:
@@ -202,15 +205,17 @@ class TranslationPipeline:
 
         # Extract terms
         terms_result = self.term_miner.extract_terms(full_text)
-        if hasattr(terms_result, 'terms') and terms_result.terms:
+        if hasattr(terms_result, "terms") and terms_result.terms:
             if isinstance(terms_result.terms, dict):
                 self.technical_terms = terms_result.terms
             else:
                 # Convert list to dict if needed
                 self.technical_terms = {
-                    term.original: term.translation if hasattr(term, 'translation') else term.original
+                    term.original: term.translation
+                    if hasattr(term, "translation")
+                    else term.original
                     for term in terms_result.terms
-                    if hasattr(term, 'original')
+                    if hasattr(term, "original")
                 }
         else:
             self.technical_terms = {}
@@ -244,7 +249,7 @@ class TranslationPipeline:
                     bbox=(block.x, block.y, block.x + block.width, block.y + block.height),
                     page_num=page.number - 1,  # PageInfo uses 0-based indexing
                     font_size=block.font_size or 12.0,
-                    font_name=block.font_name or "Unknown"
+                    font_name=block.font_name or "Unknown",
                 )
                 extractor_blocks.append(extractor_block)
 
@@ -255,7 +260,7 @@ class TranslationPipeline:
                 height=page.height,
                 text_blocks=extractor_blocks,
                 raw_text=page.text_content,
-                has_images=page.has_images
+                has_images=page.has_images,
             )
 
             # Analyze layout
@@ -267,6 +272,7 @@ class TranslationPipeline:
             # Update page regions based on layout analysis
             if layout_result.regions:
                 from pdf_translator.models.layout import Region, RegionType
+
                 page.regions = []
                 for layout_region in layout_result.regions:
                     # Map layout analyzer region type to model region type
@@ -280,11 +286,10 @@ class TranslationPipeline:
                         "header": RegionType.HEADER,
                         "footer": RegionType.FOOTER,
                         "column": RegionType.PARAGRAPH,
-                        "section": RegionType.PARAGRAPH
+                        "section": RegionType.PARAGRAPH,
                     }
                     region_type = region_type_mapping.get(
-                        layout_region.region_type.value,
-                        RegionType.UNKNOWN
+                        layout_region.region_type.value, RegionType.UNKNOWN
                     )
 
                     region = Region(
@@ -293,7 +298,7 @@ class TranslationPipeline:
                         y=layout_region.bbox[1],
                         width=layout_region.bbox[2] - layout_region.bbox[0],
                         height=layout_region.bbox[3] - layout_region.bbox[1],
-                        confidence=layout_region.confidence
+                        confidence=layout_region.confidence,
                     )
                     page.add_region(region)
 
@@ -308,16 +313,17 @@ class TranslationPipeline:
             # Translate the text
             self.logger.debug(f"Translating text block: {block.text[:50]}...")
             result = self.translator.translate(block.text)
-            translated_text = result.translated_text if hasattr(result, 'translated_text') else str(result)
+            translated_text = (
+                result.translated_text if hasattr(result, "translated_text") else str(result)
+            )
             self.logger.debug(f"Translation result: {translated_text[:50]}...")
 
             # Post-process the translation
             if self.post_processor:
-                result = self.post_processor.process(
-                    translated_text,
-                    self.technical_terms
+                result = self.post_processor.process(translated_text, self.technical_terms)
+                translated_text = (
+                    result.processed_text if hasattr(result, "processed_text") else translated_text
                 )
-                translated_text = result.processed_text if hasattr(result, 'processed_text') else translated_text
 
             # Create translated block
             translated_block = block.copy()
@@ -331,7 +337,7 @@ class TranslationPipeline:
             height=page.height,
             text_blocks=translated_blocks,
             images=page.images,
-            regions=page.regions
+            regions=page.regions,
         )
 
         return translated_page
@@ -346,8 +352,10 @@ class TranslationPipeline:
 
         for region in page.regions:
             if region.type in ["figure", "table"]:
-                if (region.x <= block_center_x <= region.x + region.width and
-                    region.y <= block_center_y <= region.y + region.height):
+                if (
+                    region.x <= block_center_x <= region.x + region.width
+                    and region.y <= block_center_y <= region.y + region.height
+                ):
                     return True
 
         return False

@@ -1,4 +1,5 @@
 """Translator module for PDF translation."""
+
 from .translator import (
     BaseTranslator,
     OllamaTranslator,
@@ -14,5 +15,5 @@ __all__ = [
     "OllamaTranslator",
     "OpenAITranslator",
     "TranslatorFactory",
-    "TranslationResult"
+    "TranslationResult",
 ]

@@ -7,7 +7,7 @@ from pathlib import Path
 from src.post_processor import PostProcessorConfig
 from src.renderer import AnnotatedDocument, DocumentRenderer, RenderConfig
 
-logging.basicConfig(level=logging.INFO, format='%(message)s')
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -19,9 +19,9 @@ def main():
         config=config,
         annotated_pages={
             0: "PDF翻訳システム\n\nこれは技術文書（technical document）の自動翻訳システムです。\n\n主な機能：\n- レイアウト保持\n- 専門用語抽出（term extraction）\n- 複数ページ対応",
-            1: "システム構成\n\n以下のモジュールで構成されています：\n\n1. PDFExtractor - PDF解析\n2. LayoutAnalyzer - レイアウト解析\n3. TermMiner - 用語抽出\n4. Translator - 翻訳処理\n5. Renderer - 出力生成"
+            1: "システム構成\n\n以下のモジュールで構成されています：\n\n1. PDFExtractor - PDF解析\n2. LayoutAnalyzer - レイアウト解析\n3. TermMiner - 用語抽出\n4. Translator - 翻訳処理\n5. Renderer - 出力生成",
         },
-        title="PDF Translation System Demo"
+        title="PDF Translation System Demo",
     )
 
     # Render to Markdown

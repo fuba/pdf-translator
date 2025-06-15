@@ -15,7 +15,7 @@ def check_system_fonts():
         "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
         "/System/Library/Fonts/ヒラギノ明朝 ProN.ttc",
         "/Library/Fonts/Arial Unicode.ttf",
-        "/System/Library/Fonts/Helvetica.ttc"
+        "/System/Library/Fonts/Helvetica.ttc",
     ]
 
     available_fonts = []
@@ -50,12 +50,7 @@ Automatic PDF Translation System
 • 日英・英日翻訳対応"""
 
     # Insert as text block
-    page1.insert_textbox(
-        fitz.Rect(50, 50, 500, 700),
-        text_content,
-        fontsize=12,
-        align=0
-    )
+    page1.insert_textbox(fitz.Rect(50, 50, 500, 700), text_content, fontsize=12, align=0)
 
     # Page 2: Technical content
     page2 = doc.new_page()
@@ -82,12 +77,7 @@ Automatic PDF Translation System
 5. 用語注釈の付与
 6. 最終出力の生成"""
 
-    page2.insert_textbox(
-        fitz.Rect(50, 50, 500, 700),
-        text_content2,
-        fontsize=11,
-        align=0
-    )
+    page2.insert_textbox(fitz.Rect(50, 50, 500, 700), text_content2, fontsize=11, align=0)
 
     # Page 3: Technical terms
     page3 = doc.new_page()
@@ -125,12 +115,7 @@ Automatic PDF Translation System
 6. 最終レンダリング
    - HTML/Markdown形式での出力"""
 
-    page3.insert_textbox(
-        fitz.Rect(50, 50, 500, 700),
-        text_content3,
-        fontsize=11,
-        align=0
-    )
+    page3.insert_textbox(fitz.Rect(50, 50, 500, 700), text_content3, fontsize=11, align=0)
 
     doc.save(output_path)
     doc.close()
@@ -170,12 +155,7 @@ Supported Technologies / 使用技術:
 - Ollama/OpenAI: Translation engine / 翻訳エンジン
 - spaCy: NLP processing / 自然言語処理"""
 
-    page1.insert_textbox(
-        fitz.Rect(50, 140, 500, 700),
-        mixed_text,
-        fontsize=11,
-        align=0
-    )
+    page1.insert_textbox(fitz.Rect(50, 140, 500, 700), mixed_text, fontsize=11, align=0)
 
     doc.save(output_path)
     doc.close()
@@ -207,6 +187,7 @@ def main():
 
     # Keep the English PDF creation
     from create_sample_pdf import create_english_sample_pdf
+
     english_pdf = samples_dir / "sample_english.pdf"
     create_english_sample_pdf(english_pdf)
 

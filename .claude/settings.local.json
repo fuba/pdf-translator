@@ -14,7 +14,9 @@
       "Bash(gh workflow:*)",
       "Bash(export:*)",
       "Bash(uv run ruff check:*)",
-      "Bash(make:*)"
+      "Bash(make:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)"
     ]
   },
   "enableAllProjectMcpServers": false

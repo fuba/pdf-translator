@@ -48,19 +48,19 @@ class Region:
 
     def contains_point(self, x: float, y: float) -> bool:
         """Check if point is within region."""
-        return (self.x <= x <= self.x + self.width and
-                self.y <= y <= self.y + self.height)
+        return self.x <= x <= self.x + self.width and self.y <= y <= self.y + self.height
 
     def overlaps(self, other: "Region") -> bool:
         """Check if this region overlaps with another."""
         x1_min, y1_min, x1_max, y1_max = self.bounds
         x2_min, y2_min, x2_max, y2_max = other.bounds
 
-        return not (x1_max < x2_min or x2_max < x1_min or
-                    y1_max < y2_min or y2_max < y1_min)
+        return not (x1_max < x2_min or x2_max < x1_min or y1_max < y2_min or y2_max < y1_min)
 
     def __repr__(self) -> str:
         """String representation."""
-        return (f"Region(type={self.type.value}, "
-                f"bounds=({self.x:.1f}, {self.y:.1f}, "
-                f"{self.x + self.width:.1f}, {self.y + self.height:.1f}))")
+        return (
+            f"Region(type={self.type.value}, "
+            f"bounds=({self.x:.1f}, {self.y:.1f}, "
+            f"{self.x + self.width:.1f}, {self.y + self.height:.1f}))"
+        )

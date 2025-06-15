@@ -1,6 +1,5 @@
 """Tests for document rendering functionality."""
 
-
 import pytest
 
 from pdf_translator.extractor import PageInfo, TextBlock
@@ -54,7 +53,7 @@ class TestDocumentRenderer:
             annotated_pages={
                 0: "これはタイトルです\n\nこれは段落です。専門用語（technical term）が含まれています。\n\nもう一つの段落です。",
                 1: "2ページ目のタイトル\n\nこれは2ページ目の内容です。\n\n- リスト項目1\n- リスト項目2\n- リスト項目3",
-            }
+            },
         )
 
     @pytest.fixture
@@ -67,21 +66,36 @@ class TestDocumentRenderer:
                     bbox=(0, 0, 100, 50),
                     confidence=0.95,
                     page_num=0,
-                    text_blocks=[TextBlock("これはタイトルです", (0, 0, 100, 50), 0, 18, "Arial", "title")],
+                    text_blocks=[
+                        TextBlock("これはタイトルです", (0, 0, 100, 50), 0, 18, "Arial", "title")
+                    ],
                 ),
                 LayoutRegion(
                     region_type=RegionType.PARAGRAPH,
                     bbox=(0, 60, 100, 150),
                     confidence=0.9,
                     page_num=0,
-                    text_blocks=[TextBlock("これは段落です。専門用語（technical term）が含まれています。", (0, 60, 100, 150), 0, 12, "Arial", "paragraph")],
+                    text_blocks=[
+                        TextBlock(
+                            "これは段落です。専門用語（technical term）が含まれています。",
+                            (0, 60, 100, 150),
+                            0,
+                            12,
+                            "Arial",
+                            "paragraph",
+                        )
+                    ],
                 ),
                 LayoutRegion(
                     region_type=RegionType.PARAGRAPH,
                     bbox=(0, 160, 100, 200),
                     confidence=0.9,
                     page_num=0,
-                    text_blocks=[TextBlock("もう一つの段落です。", (0, 160, 100, 200), 0, 12, "Arial", "paragraph")],
+                    text_blocks=[
+                        TextBlock(
+                            "もう一つの段落です。", (0, 160, 100, 200), 0, 12, "Arial", "paragraph"
+                        )
+                    ],
                 ),
             ],
             1: [
@@ -90,14 +104,25 @@ class TestDocumentRenderer:
                     bbox=(0, 0, 100, 40),
                     confidence=0.95,
                     page_num=1,
-                    text_blocks=[TextBlock("2ページ目のタイトル", (0, 0, 100, 40), 1, 16, "Arial", "heading")],
+                    text_blocks=[
+                        TextBlock("2ページ目のタイトル", (0, 0, 100, 40), 1, 16, "Arial", "heading")
+                    ],
                 ),
                 LayoutRegion(
                     region_type=RegionType.PARAGRAPH,
                     bbox=(0, 50, 100, 100),
                     confidence=0.9,
                     page_num=1,
-                    text_blocks=[TextBlock("これは2ページ目の内容です。", (0, 50, 100, 100), 1, 12, "Arial", "paragraph")],
+                    text_blocks=[
+                        TextBlock(
+                            "これは2ページ目の内容です。",
+                            (0, 50, 100, 100),
+                            1,
+                            12,
+                            "Arial",
+                            "paragraph",
+                        )
+                    ],
                 ),
                 LayoutRegion(
                     region_type=RegionType.LIST,
@@ -164,7 +189,7 @@ class TestDocumentRenderer:
             config=PostProcessorConfig(),
             annotated_pages={
                 0: "Title\n\nParagraph with content.",
-            }
+            },
         )
 
         output_path = tmp_path / "output.html"
@@ -187,10 +212,7 @@ class TestDocumentRenderer:
         config = RenderConfig(output_format="html", include_style=False)
         renderer = DocumentRenderer(config)
 
-        document = AnnotatedDocument(
-            config=PostProcessorConfig(),
-            annotated_pages={0: "Content"}
-        )
+        document = AnnotatedDocument(config=PostProcessorConfig(), annotated_pages={0: "Content"})
 
         output_path = tmp_path / "output_no_style.html"
         renderer.render(document, output_path)
@@ -221,9 +243,7 @@ class TestDocumentRenderer:
             )
         ]
 
-        translated_texts = {
-            0: "タイトル\n\n内容です。"
-        }
+        translated_texts = {0: "タイトル\n\n内容です。"}
 
         output_path = tmp_path / "from_pages.md"
         renderer.render_from_pages(pages, translated_texts, output_path)
@@ -235,14 +255,14 @@ class TestDocumentRenderer:
 
     def test_escape_html(self, renderer):
         """Test HTML escaping."""
-        text = 'Test <tag> & "quotes" \'apostrophe\''
+        text = "Test <tag> & \"quotes\" 'apostrophe'"
         escaped = renderer._escape_html(text)
 
-        assert '&lt;' in str(escaped)
-        assert '&gt;' in str(escaped)
-        assert '&amp;' in str(escaped)
-        assert '&quot;' in str(escaped)
-        assert '&#39;' in str(escaped)
+        assert "&lt;" in str(escaped)
+        assert "&gt;" in str(escaped)
+        assert "&amp;" in str(escaped)
+        assert "&quot;" in str(escaped)
+        assert "&#39;" in str(escaped)
 
     def test_get_block_type(self, renderer):
         """Test block type mapping."""
@@ -281,14 +301,22 @@ class TestDocumentRenderer:
                     bbox=(0, 0, 100, 100),
                     confidence=0.9,
                     page_num=0,
-                    text_blocks=[TextBlock("Column1\tColumn2\nData1\tData2\nData3\tData4", (0, 0, 100, 100), 0, 12, "Arial", "table")],
+                    text_blocks=[
+                        TextBlock(
+                            "Column1\tColumn2\nData1\tData2\nData3\tData4",
+                            (0, 0, 100, 100),
+                            0,
+                            12,
+                            "Arial",
+                            "table",
+                        )
+                    ],
                 ),
             ]
         }
 
         document = AnnotatedDocument(
-            config=PostProcessorConfig(),
-            annotated_pages={0: "Table content"}
+            config=PostProcessorConfig(), annotated_pages={0: "Table content"}
         )
 
         output_path = tmp_path / "table.md"
@@ -307,14 +335,17 @@ class TestDocumentRenderer:
                     bbox=(0, 0, 100, 100),
                     confidence=0.9,
                     page_num=0,
-                    text_blocks=[TextBlock("Figure 1: Sample diagram", (0, 0, 100, 100), 0, 12, "Arial", "figure")],
+                    text_blocks=[
+                        TextBlock(
+                            "Figure 1: Sample diagram", (0, 0, 100, 100), 0, 12, "Arial", "figure"
+                        )
+                    ],
                 ),
             ]
         }
 
         document = AnnotatedDocument(
-            config=PostProcessorConfig(),
-            annotated_pages={0: "Figure content"}
+            config=PostProcessorConfig(), annotated_pages={0: "Figure content"}
         )
 
         output_path = tmp_path / "figure.md"

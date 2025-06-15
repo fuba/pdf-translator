@@ -46,8 +46,12 @@ def test_ollama_connection():
         # Load configuration to get expected model
         try:
             config = ConfigManager()
-            expected_model = os.getenv("OLLAMA_MODEL") or config.get("translator.model", "gemma3:12b-it-q8_0")
-            api_url = os.getenv("OLLAMA_API_URL") or config.get("translator.base_url", "http://localhost:11434/api")
+            expected_model = os.getenv("OLLAMA_MODEL") or config.get(
+                "translator.model", "gemma3:12b-it-q8_0"
+            )
+            api_url = os.getenv("OLLAMA_API_URL") or config.get(
+                "translator.base_url", "http://localhost:11434/api"
+            )
         except:
             expected_model = "gemma3:12b-it-q8_0"
             api_url = "http://localhost:11434/api"

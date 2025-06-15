@@ -8,9 +8,9 @@ from src.extractor import PDFExtractor
 
 def test_pdf_extraction(pdf_path: Path):
     """Test PDF text extraction and display results."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Testing: {pdf_path.name}")
-    print('='*60)
+    print("=" * 60)
 
     extractor = PDFExtractor()
 

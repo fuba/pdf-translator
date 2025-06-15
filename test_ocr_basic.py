@@ -6,8 +6,9 @@ from pathlib import Path
 
 from src.extractor import PDFExtractor
 
-logging.basicConfig(level=logging.INFO, format='%(message)s')
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
+
 
 def main():
     """Test basic PDF extraction."""
@@ -32,6 +33,7 @@ def main():
 
         if page.text_blocks:
             logger.info(f"  Sample text: {page.text_blocks[0].text[:100]}...")
+
 
 if __name__ == "__main__":
     main()

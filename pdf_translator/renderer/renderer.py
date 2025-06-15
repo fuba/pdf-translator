@@ -60,8 +60,7 @@ class DocumentRenderer:
 
         # Setup Jinja2 environment for HTML templates
         self.jinja_env = jinja2.Environment(
-            loader=jinja2.BaseLoader(),
-            autoescape=jinja2.select_autoescape(['html', 'xml'])
+            loader=jinja2.BaseLoader(), autoescape=jinja2.select_autoescape(["html", "xml"])
         )
 
         # Create templates
@@ -238,7 +237,7 @@ class DocumentRenderer:
         lines = []
 
         # Add title if available
-        if hasattr(document, 'title') and document.title:
+        if hasattr(document, "title") and document.title:
             lines.append(f"# {document.title}")
             lines.append("")
 
@@ -254,18 +253,16 @@ class DocumentRenderer:
 
             # If we have layout regions, use them for structure
             if layout_regions and page_num in layout_regions:
-                self._render_regions_markdown(
-                    lines, layout_regions[page_num], page_text
-                )
+                self._render_regions_markdown(lines, layout_regions[page_num], page_text)
             else:
                 # Simple paragraph-based rendering
-                paragraphs = page_text.strip().split('\n\n')
+                paragraphs = page_text.strip().split("\n\n")
                 for para in paragraphs:
                     if para.strip():
                         lines.append(para.strip())
                         lines.append("")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     def _render_regions_markdown(
         self,
@@ -285,9 +282,7 @@ class DocumentRenderer:
         for region in regions:
             # Extract text from text blocks
             region_text = (
-                "\n".join(block.text for block in region.text_blocks)
-                if region.text_blocks
-                else ""
+                "\n".join(block.text for block in region.text_blocks) if region.text_blocks else ""
             )
 
             if region.region_type == RegionType.TITLE:
@@ -298,7 +293,7 @@ class DocumentRenderer:
                 lines.append("")
             elif region.region_type == RegionType.LIST:
                 # Format as list items
-                items = region_text.split('\n')
+                items = region_text.split("\n")
                 for item in items:
                     if item.strip():
                         lines.append(f"- {item.strip()}")
@@ -336,52 +331,49 @@ class DocumentRenderer:
         pages_data = []
 
         for page_num, page_text in document.annotated_pages.items():
-            page_data = {
-                'page_num': page_num,
-                'blocks': [],
-                'regions': []
-            }
+            page_data = {"page_num": page_num, "blocks": [], "regions": []}
 
             if layout_regions and page_num in layout_regions:
                 # Use layout regions
                 for region in layout_regions[page_num]:
                     # Extract text from text blocks
                     region_text = (
-                "\n".join(block.text for block in region.text_blocks)
-                if region.text_blocks
-                else ""
-            )
+                        "\n".join(block.text for block in region.text_blocks)
+                        if region.text_blocks
+                        else ""
+                    )
 
                     region_data = {
-                        'type': region.region_type.value,
-                        'blocks': [{
-                            'type': self._get_block_type(region.region_type),
-                            'text': self._escape_html(region_text)
-                        }]
+                        "type": region.region_type.value,
+                        "blocks": [
+                            {
+                                "type": self._get_block_type(region.region_type),
+                                "text": self._escape_html(region_text),
+                            }
+                        ],
                     }
-                    page_data['regions'].append(region_data)
+                    page_data["regions"].append(region_data)
             else:
                 # Simple block-based rendering
-                paragraphs = page_text.strip().split('\n\n')
+                paragraphs = page_text.strip().split("\n\n")
                 for para in paragraphs:
                     if para.strip():
-                        page_data['blocks'].append({
-                            'type': 'paragraph',
-                            'text': self._escape_html(para.strip())
-                        })
+                        page_data["blocks"].append(
+                            {"type": "paragraph", "text": self._escape_html(para.strip())}
+                        )
 
             pages_data.append(page_data)
 
         # Render template
         # Get target language from config if available
-        target_lang = 'en'
-        if hasattr(document, 'config') and hasattr(document.config, 'target_lang'):
+        target_lang = "en"
+        if hasattr(document, "config") and hasattr(document.config, "target_lang"):
             target_lang = document.config.target_lang
-        elif hasattr(document, 'config') and hasattr(document.config, 'target_language'):
+        elif hasattr(document, "config") and hasattr(document.config, "target_language"):
             target_lang = document.config.target_language
 
         return self.html_template.render(
-            title=getattr(document, 'title', 'Translated Document'),
+            title=getattr(document, "title", "Translated Document"),
             target_lang=target_lang,
             pages=pages_data,
             include_style=self.render_config.include_style,
@@ -418,11 +410,13 @@ class DocumentRenderer:
             Escaped text
 
         """
-        return Markup(text.replace('&', '&amp;')
-                          .replace('<', '&lt;')
-                          .replace('>', '&gt;')
-                          .replace('"', '&quot;')
-                          .replace("'", '&#39;'))
+        return Markup(
+            text.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace('"', "&quot;")
+            .replace("'", "&#39;")
+        )
 
     def render_from_pages(
         self,
@@ -440,6 +434,7 @@ class DocumentRenderer:
             layout_regions: Optional layout regions
 
         """
+
         # Create a simple annotated document
         class SimpleConfig:
             target_lang = "ja"

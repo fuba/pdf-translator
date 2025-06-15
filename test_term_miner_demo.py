@@ -1,4 +1,5 @@
 """Demo script to test term mining functionality."""
+
 import logging
 from pathlib import Path
 
@@ -9,8 +10,7 @@ from src.term_miner import TermMiner, TermMinerConfig
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,7 @@ def test_spacy_availability():
 
     try:
         import spacy
+
         print("✓ spaCy is available")
 
         # Test English model
@@ -54,7 +55,7 @@ def test_term_extraction_simple():
     config = TermMinerConfig(
         min_frequency=1,
         max_terms=20,
-        wikipedia_lookup=False  # Disable for speed
+        wikipedia_lookup=False,  # Disable for speed
     )
     miner = TermMiner(config)
 
@@ -80,7 +81,9 @@ def test_term_extraction_simple():
         for i, term in enumerate(result.terms[:10], 1):  # Show first 10
             print(f"  {i}. {term.text} (freq: {term.frequency}, conf: {term.confidence:.2f})")
             if term.context:
-                context_preview = term.context[:60] + "..." if len(term.context) > 60 else term.context
+                context_preview = (
+                    term.context[:60] + "..." if len(term.context) > 60 else term.context
+                )
                 print(f"      Context: {context_preview}")
     else:
         print(f"✗ Term extraction failed: {result.error}")
@@ -111,11 +114,7 @@ def test_term_extraction_with_pdf():
     print(f"✓ Extracted {len(full_text)} characters from PDF")
 
     # Extract terms
-    config = TermMinerConfig(
-        min_frequency=1,
-        max_terms=15,
-        wikipedia_lookup=False
-    )
+    config = TermMinerConfig(min_frequency=1, max_terms=15, wikipedia_lookup=False)
     miner = TermMiner(config)
 
     result = miner.extract_terms(full_text)
@@ -137,11 +136,7 @@ def test_wikipedia_lookup():
     """Test Wikipedia translation lookup."""
     print("\n=== Testing Wikipedia Translation Lookup ===")
 
-    config = TermMinerConfig(
-        min_frequency=1,
-        max_terms=5,
-        wikipedia_lookup=True
-    )
+    config = TermMinerConfig(min_frequency=1, max_terms=5, wikipedia_lookup=True)
     miner = TermMiner(config)
 
     # Simple text with known technical terms
@@ -158,7 +153,9 @@ def test_wikipedia_lookup():
 
         print("\nTerms with translations:")
         for term in result.terms:
-            translations = ", ".join(f"{lang}: {trans}" for lang, trans in term.translations.items())
+            translations = ", ".join(
+                f"{lang}: {trans}" for lang, trans in term.translations.items()
+            )
             if translations:
                 print(f"  {term.text} → {translations}")
             else:
@@ -179,7 +176,7 @@ def test_config_from_file():
         print(f"⚠️  Config file not found: {config_path}")
         return True
 
-    with open(config_path, 'r') as f:
+    with open(config_path, "r") as f:
         full_config = yaml.safe_load(f)
 
     term_config_dict = full_config.get("term_extraction", {})

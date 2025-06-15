@@ -10,9 +10,7 @@ from typing import Optional
 
 
 def setup_logging(
-    level: int = logging.INFO,
-    log_file: Optional[str] = None,
-    format_string: Optional[str] = None
+    level: int = logging.INFO, log_file: Optional[str] = None, format_string: Optional[str] = None
 ) -> None:
     """Setup logging configuration for the application.
 
@@ -37,8 +35,8 @@ def setup_logging(
         format=format_string,
         handlers=[
             logging.StreamHandler(sys.stdout),
-            *(logging.FileHandler(log_file) if log_file else [])
-        ]
+            *(logging.FileHandler(log_file) if log_file else []),
+        ],
     )
 
     # Set specific library log levels to reduce noise

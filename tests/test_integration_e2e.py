@@ -22,31 +22,21 @@ class TestEndToEndIntegration:
                 "engine": "ollama",
                 "model": "gemma3:4b",
                 "base_url": "http://localhost:11434/api",
-                "timeout": 60
+                "timeout": 60,
             },
             "source_language": "en",
             "target_language": "ja",
-            "extraction": {
-                "max_pages": 50,
-                "enable_ocr": True,
-                "force_ocr": False
-            },
-            "layout": {
-                "enabled": True
-            },
-            "term_extraction": {
-                "enabled": True
-            },
-            "output": {
-                "format": "html",
-                "directory": str(tmp_path)
-            }
+            "extraction": {"max_pages": 50, "enable_ocr": True, "force_ocr": False},
+            "layout": {"enabled": True},
+            "term_extraction": {"enabled": True},
+            "output": {"format": "html", "directory": str(tmp_path)},
         }
 
         # Create temporary config file
         config_file = tmp_path / "config.yml"
         import yaml
-        with open(config_file, 'w') as f:
+
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         return ConfigManager(str(config_file))
@@ -91,9 +81,9 @@ class TestEndToEndIntegration:
             print(f"  Total characters: {result['total_chars']}")
             print(f"  Processing time: {result['processing_time']:.2f}s")
 
-            if result.get('terms'):
+            if result.get("terms"):
                 print(f"  Technical terms: {len(result['terms'])}")
-                for term in result['terms'][:5]:
+                for term in result["terms"][:5]:
                     print(f"    - {term}")
 
         except Exception as e:
@@ -110,7 +100,7 @@ class TestEndToEndIntegration:
             result = pipeline.translate(
                 sample_pdf_path,
                 str(output_path),
-                pages=[1]  # Only translate first page for speed
+                pages=[1],  # Only translate first page for speed
             )
 
             # Verify results
@@ -125,7 +115,7 @@ class TestEndToEndIntegration:
             assert output_path.stat().st_size > 0
 
             # Check output contains expected content
-            content = output_path.read_text(encoding='utf-8')
+            content = output_path.read_text(encoding="utf-8")
             assert len(content) > 0
             assert "html" in content.lower() or "<!DOCTYPE" in content
 
@@ -134,11 +124,13 @@ class TestEndToEndIntegration:
             print(f"  Processing time: {result['processing_time']:.2f}s")
             print(f"  Output file size: {output_path.stat().st_size} bytes")
 
-            if result.get('terms_extracted'):
+            if result.get("terms_extracted"):
                 print(f"  Terms extracted: {result['terms_extracted']}")
 
         except Exception as e:
-            pytest.skip(f"Full translation failed (expected if Ollama/dependencies not available): {e}")
+            pytest.skip(
+                f"Full translation failed (expected if Ollama/dependencies not available): {e}"
+            )
 
     @pytest.mark.integration
     def test_page_range_translation(self, test_config, sample_pdf_path, tmp_path):
@@ -150,7 +142,7 @@ class TestEndToEndIntegration:
             result = pipeline.translate(
                 sample_pdf_path,
                 str(output_path),
-                pages=[1, 2]  # Translate first two pages
+                pages=[1, 2],  # Translate first two pages
             )
 
             assert result["pages_processed"] <= 2
@@ -205,14 +197,10 @@ class TestEndToEndIntegration:
             output_path = tmp_path / f"test_output{suffix}"
 
             try:
-                pipeline.translate(
-                    sample_pdf_path,
-                    str(output_path),
-                    pages=[1]
-                )
+                pipeline.translate(sample_pdf_path, str(output_path), pages=[1])
 
                 assert output_path.exists()
-                content = output_path.read_text(encoding='utf-8')
+                content = output_path.read_text(encoding="utf-8")
                 assert len(content) > 0
 
                 print(f"Format {format_type}: {len(content)} characters")

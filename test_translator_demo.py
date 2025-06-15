@@ -1,4 +1,5 @@
 """Demo script to test translator functionality."""
+
 import logging
 from pathlib import Path
 
@@ -9,8 +10,7 @@ from pdf_translator.translator import OllamaTranslator, TranslatorConfig, Transl
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ def test_translation():
 
     # Load config
     config_path = Path("config/config.yml")
-    with open(config_path, 'r') as f:
+    with open(config_path, "r") as f:
         full_config = yaml.safe_load(f)
 
     translator_config = full_config.get("translator", {})
@@ -85,16 +85,12 @@ def test_batch_translation():
     config = TranslatorConfig(engine="ollama")
     translator = OllamaTranslator(config)
 
-    texts = [
-        "First sentence.",
-        "Second sentence.",
-        "Third sentence with technical terms like API."
-    ]
+    texts = ["First sentence.", "Second sentence.", "Third sentence with technical terms like API."]
 
     results = translator.translate_batch(texts, source_lang="en", target_lang="ja")
 
     for i, (text, result) in enumerate(zip(texts, results, strict=False)):
-        print(f"\n{i+1}. Original: {text}")
+        print(f"\n{i + 1}. Original: {text}")
         if result.success:
             print(f"   Translated: {result.translated_text}")
         else:

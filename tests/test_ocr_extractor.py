@@ -111,7 +111,10 @@ class TestOCRExtractor:
         assert ocr_extractor._classify_block_type(25, "Title") == "title"
         assert ocr_extractor._classify_block_type(18, "Heading") == "heading"
         assert ocr_extractor._classify_block_type(12, "Short") == "short_text"
-        assert ocr_extractor._classify_block_type(12, "This is a longer paragraph with multiple words") == "paragraph"
+        assert (
+            ocr_extractor._classify_block_type(12, "This is a longer paragraph with multiple words")
+            == "paragraph"
+        )
 
     def test_is_image_based_page(self, ocr_extractor, image_pdf):
         """Test detection of image-based pages."""
@@ -125,7 +128,9 @@ class TestOCRExtractor:
         assert ocr_extractor.is_image_based_page(page) is True
 
         # Test text-based page (no images)
-        page.get_text = MagicMock(return_value="This is a long text content that indicates text-based page")
+        page.get_text = MagicMock(
+            return_value="This is a long text content that indicates text-based page"
+        )
         page.get_images = MagicMock(return_value=[])  # No images
         assert ocr_extractor.is_image_based_page(page) is False
 
@@ -136,11 +141,19 @@ class TestOCRExtractor:
         """Test OCR extraction from a single page."""
         # Mock OCR results
         mock_ocr_instance = MagicMock()
-        mock_ocr_result = [[
-            [[[100, 50], [300, 50], [300, 100], [100, 100]], ("OCR Test Title", 0.95)],
-            [[[100, 150], [500, 150], [500, 200], [100, 200]], ("This is a test document for OCR.", 0.92)],
-            [[[100, 250], [400, 250], [400, 300], [100, 300]], ("Low confidence text", 0.3)],  # Below threshold
-        ]]
+        mock_ocr_result = [
+            [
+                [[[100, 50], [300, 50], [300, 100], [100, 100]], ("OCR Test Title", 0.95)],
+                [
+                    [[100, 150], [500, 150], [500, 200], [100, 200]],
+                    ("This is a test document for OCR.", 0.92),
+                ],
+                [
+                    [[100, 250], [400, 250], [400, 300], [100, 300]],
+                    ("Low confidence text", 0.3),
+                ],  # Below threshold
+            ]
+        ]
         mock_ocr_instance.ocr.return_value = mock_ocr_result
         mock_paddle_ocr.return_value = mock_ocr_instance
 
@@ -171,9 +184,11 @@ class TestOCRExtractor:
         """Test full PDF extraction with OCR."""
         # Mock OCR results
         mock_ocr_instance = MagicMock()
-        mock_ocr_result = [[
-            [[[100, 50], [300, 50], [300, 100], [100, 100]], ("OCR Test Title", 0.95)],
-        ]]
+        mock_ocr_result = [
+            [
+                [[[100, 50], [300, 50], [300, 100], [100, 100]], ("OCR Test Title", 0.95)],
+            ]
+        ]
         mock_ocr_instance.ocr.return_value = mock_ocr_result
         mock_paddle_ocr.return_value = mock_ocr_instance
 
@@ -221,14 +236,16 @@ class TestOCRExtractor:
 
         # Mock OCR for image page
         mock_ocr_instance = MagicMock()
-        mock_ocr_result = [[
-            [[[100, 50], [300, 50], [300, 100], [100, 100]], ("Image page text", 0.95)],
-        ]]
+        mock_ocr_result = [
+            [
+                [[[100, 50], [300, 50], [300, 100], [100, 100]], ("Image page text", 0.95)],
+            ]
+        ]
         mock_ocr_instance.ocr.return_value = mock_ocr_result
         mock_paddle_ocr.return_value = mock_ocr_instance
 
         # Mock is_image_based_page to return True for page 2
-        with patch.object(ocr_extractor, 'is_image_based_page') as mock_is_image:
+        with patch.object(ocr_extractor, "is_image_based_page") as mock_is_image:
             mock_is_image.side_effect = [False, True]  # First page text, second page image
 
             pages = ocr_extractor.extract_pdf_with_ocr(pdf_path)

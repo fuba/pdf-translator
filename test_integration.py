@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Integration test for PDF translation system."""
+
 from pathlib import Path
 
 from pdf_translator.config.manager import ConfigManager
@@ -43,7 +44,7 @@ def test_pdf_translation_pipeline():
         # Check output
         output_file = Path(output_path)
         if output_file.exists():
-            content = output_file.read_text(encoding='utf-8')
+            content = output_file.read_text(encoding="utf-8")
             print("\nOutput preview (first 200 chars):")
             print(content[:200] + "...")
 
@@ -51,7 +52,9 @@ def test_pdf_translation_pipeline():
         print("\n=== Translation failed ===")
         print(f"Error: {e}")
         import traceback
+
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     test_pdf_translation_pipeline()

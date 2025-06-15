@@ -52,8 +52,12 @@ def test_ocr_extraction():
                 if page.text_blocks:
                     logger.info("  - Sample text blocks:")
                     for i, block in enumerate(page.text_blocks[:3]):
-                        logger.info(f"    Block {i + 1} ({block.block_type}, size={block.font_size:.1f}):")
-                        logger.info(f"      Text: {block.text[:100]}{'...' if len(block.text) > 100 else ''}")
+                        logger.info(
+                            f"    Block {i + 1} ({block.block_type}, size={block.font_size:.1f}):"
+                        )
+                        logger.info(
+                            f"      Text: {block.text[:100]}{'...' if len(block.text) > 100 else ''}"
+                        )
 
                 # Check if OCR was used
                 if any(block.font_name == "OCR" for block in page.text_blocks):
@@ -62,6 +66,7 @@ def test_ocr_extraction():
         except Exception as e:
             logger.error(f"Error processing {pdf_path}: {e}")
             import traceback
+
             traceback.print_exc()
 
 
@@ -95,9 +100,24 @@ def test_image_pdf_creation_and_ocr():
 
             # Draw text
             draw.text((50, 50), "PDF OCR Demo", fill="black", font=font_large)
-            draw.text((50, 150), "This is a test of the OCR functionality.", fill="black", font=font_normal)
-            draw.text((50, 200), "The text in this PDF is actually an image.", fill="black", font=font_normal)
-            draw.text((50, 250), "PaddleOCR should extract this text correctly.", fill="black", font=font_normal)
+            draw.text(
+                (50, 150),
+                "This is a test of the OCR functionality.",
+                fill="black",
+                font=font_normal,
+            )
+            draw.text(
+                (50, 200),
+                "The text in this PDF is actually an image.",
+                fill="black",
+                font=font_normal,
+            )
+            draw.text(
+                (50, 250),
+                "PaddleOCR should extract this text correctly.",
+                fill="black",
+                font=font_normal,
+            )
 
             # Save image
             img_path = tmpdir_path / "test_page.png"
@@ -135,6 +155,7 @@ def test_image_pdf_creation_and_ocr():
     except Exception as e:
         logger.error(f"Error in image PDF test: {e}")
         import traceback
+
         traceback.print_exc()
 
 

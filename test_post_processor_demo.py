@@ -1,4 +1,5 @@
 """Demo script to test post-processing functionality."""
+
 import logging
 from pathlib import Path
 
@@ -9,8 +10,7 @@ from src.term_miner import Term
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ def test_basic_annotation():
         "artificial intelligence": "人工知能",
         "deep learning": "深層学習",
         "neural network": "ニューラルネットワーク",
-        "natural language processing": "自然言語処理"
+        "natural language processing": "自然言語処理",
     }
 
     result = processor.process(translated_text, term_dict)
@@ -55,7 +55,7 @@ def test_basic_annotation():
             "人工知能（artificial intelligence）",
             "深層学習（deep learning）",
             "ニューラルネットワーク（neural network）",
-            "自然言語処理（natural language processing）"
+            "自然言語処理（natural language processing）",
         ]
 
         found_annotations = []
@@ -86,10 +86,7 @@ def test_first_occurrence_only():
 機械学習は重要な技術です。機械学習の応用例を見てみましょう。
 深層学習も機械学習の一種です。"""
 
-    term_dict = {
-        "machine learning": "機械学習",
-        "deep learning": "深層学習"
-    }
+    term_dict = {"machine learning": "機械学習", "deep learning": "深層学習"}
 
     result = processor.process(translated_text, term_dict)
 
@@ -123,9 +120,9 @@ def test_custom_format():
     # Test different formats
     formats = [
         "{translation}（{original}）",  # Default Japanese style
-        "{translation} [{original}]",    # Square brackets
-        "{translation} ({original})",    # Regular parentheses
-        "{translation}『{original}』"    # Japanese quotes
+        "{translation} [{original}]",  # Square brackets
+        "{translation} ({original})",  # Regular parentheses
+        "{translation}『{original}』",  # Japanese quotes
     ]
 
     translated_text = "機械学習について説明します。"
@@ -165,7 +162,7 @@ def test_overlapping_terms():
     term_dict = {
         "natural language": "自然言語",
         "natural language processing": "自然言語処理",
-        "system": "システム"
+        "system": "システム",
     }
 
     result = processor.process(translated_text, term_dict)
@@ -202,7 +199,9 @@ def test_spacing_adjustment():
     processor = PostProcessor(config)
 
     # Text with mixed Japanese and English
-    translated_text = "これはAPI（Application Programming Interface）の説明です。JSONデータを使用します。"
+    translated_text = (
+        "これはAPI（Application Programming Interface）の説明です。JSONデータを使用します。"
+    )
     term_dict = {}
 
     result = processor.process(translated_text, term_dict)
@@ -235,15 +234,18 @@ def test_config_loading():
         return True
 
     try:
-        with open(config_path, 'r') as f:
+        with open(config_path, "r") as f:
             full_config = yaml.safe_load(f)
 
         # Look for post-processing config (may not exist yet)
-        post_config_dict = full_config.get("post_processing", {
-            "add_source_terms": True,
-            "source_term_format": "{translation}（{original}）",
-            "spacing_adjustment": True
-        })
+        post_config_dict = full_config.get(
+            "post_processing",
+            {
+                "add_source_terms": True,
+                "source_term_format": "{translation}（{original}）",
+                "spacing_adjustment": True,
+            },
+        )
 
         config = PostProcessorConfig.from_dict(post_config_dict)
         PostProcessor(config)
@@ -273,7 +275,7 @@ def test_with_term_objects():
     terms = [
         Term("machine learning", 3, translations={"ja": "機械学習"}),
         Term("deep learning", 2, translations={"ja": "深層学習"}),
-        Term("AI", 1, translations={"ja": "AI"})  # Too short, should be filtered
+        Term("AI", 1, translations={"ja": "AI"}),  # Too short, should be filtered
     ]
 
     result = processor.process_with_terms(translated_text, terms)

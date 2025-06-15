@@ -1,4 +1,5 @@
 """Term mining and translation lookup module."""
+
 import logging
 import re
 from collections import Counter
@@ -12,6 +13,7 @@ from pdf_translator.config.manager import ConfigManager
 # spaCy import with error handling
 try:
     import spacy
+
     HAS_SPACY = True
 except ImportError:
     HAS_SPACY = False
@@ -28,10 +30,9 @@ class TermMinerConfig:
     max_terms: int = 100  # Maximum terms to extract per document
     wikipedia_lookup: bool = True  # Look up terms in Wikipedia
     languages: List[str] = field(default_factory=lambda: ["en", "ja"])
-    spacy_models: Dict[str, str] = field(default_factory=lambda: {
-        "en": "en_core_web_sm",
-        "ja": "ja_core_news_sm"
-    })
+    spacy_models: Dict[str, str] = field(
+        default_factory=lambda: {"en": "en_core_web_sm", "ja": "ja_core_news_sm"}
+    )
     cache_dir: Optional[str] = None  # Cache directory for translations
 
     @classmethod
@@ -84,8 +85,9 @@ class WikipediaLookup:
         self.base_url = "https://{lang}.wikipedia.org/api/rest_v1/page/summary/{title}"
         self.search_url = "https://{lang}.wikipedia.org/w/api.php"
 
-    def lookup_term(self, term: str, source_lang: str = "en",
-                   target_lang: str = "ja") -> Optional[Dict[str, Any]]:
+    def lookup_term(
+        self, term: str, source_lang: str = "en", target_lang: str = "ja"
+    ) -> Optional[Dict[str, Any]]:
         """Look up term translation and definition in Wikipedia."""
         try:
             # First, search for the term
@@ -95,15 +97,11 @@ class WikipediaLookup:
                 "list": "search",
                 "srsearch": term,
                 "srlimit": 1,
-                "srprop": "snippet"
+                "srprop": "snippet",
             }
 
             search_url = f"https://{source_lang}.wikipedia.org/w/api.php"
-            search_response = requests.get(
-                search_url,
-                params=search_params,
-                timeout=self.timeout
-            )
+            search_response = requests.get(search_url, params=search_params, timeout=self.timeout)
             search_response.raise_for_status()
             search_data = search_response.json()
 
@@ -123,14 +121,10 @@ class WikipediaLookup:
                 "explaintext": True,
                 "exsentences": 2,
                 "llprop": "langname",
-                "lllang": target_lang
+                "lllang": target_lang,
             }
 
-            page_response = requests.get(
-                search_url,
-                params=page_params,
-                timeout=self.timeout
-            )
+            page_response = requests.get(search_url, params=page_params, timeout=self.timeout)
             page_response.raise_for_status()
             page_data = page_response.json()
 
@@ -155,7 +149,7 @@ class WikipediaLookup:
                 "translation": translation,
                 "extract": page_info.get("extract", ""),
                 "source_title": page_title,
-                "confidence": 0.8  # Wikipedia translations are generally reliable
+                "confidence": 0.8,  # Wikipedia translations are generally reliable
             }
 
         except Exception as e:
@@ -248,16 +242,12 @@ class TermMiner:
                 success=True,
                 total_terms_found=original_count,
                 filtered_terms=filtered_count,
-                metadata={"method": "spacy", "model": nlp.meta.get("name", "unknown")}
+                metadata={"method": "spacy", "model": nlp.meta.get("name", "unknown")},
             )
 
         except Exception as e:
             logger.error(f"Term extraction failed: {str(e)}")
-            return TermExtractionResult(
-                terms=[],
-                success=False,
-                error=str(e)
-            )
+            return TermExtractionResult(terms=[], success=False, error=str(e))
 
     def _extract_terms_fallback(self, text: str) -> TermExtractionResult:
         """Fallback term extraction without spaCy."""
@@ -277,18 +267,10 @@ class TermMiner:
             terms = self._filter_terms_by_frequency(terms, self.miner_config.min_frequency)
             terms = self._limit_terms(terms, self.miner_config.max_terms)
 
-            return TermExtractionResult(
-                terms=terms,
-                success=True,
-                metadata={"method": "fallback"}
-            )
+            return TermExtractionResult(terms=terms, success=True, metadata={"method": "fallback"})
 
         except Exception as e:
-            return TermExtractionResult(
-                terms=[],
-                success=False,
-                error=str(e)
-            )
+            return TermExtractionResult(terms=[], success=False, error=str(e))
 
     def _extract_named_entities(self, doc: Any, text: str) -> List[Term]:
         """Extract named entities as terms."""
@@ -299,11 +281,7 @@ class TermMiner:
             if ent.label_ in ["ORG", "PRODUCT", "TECHNOLOGY", "WORK_OF_ART", "EVENT"]:
                 context = self._extract_context(text, ent.text, ent.start_char)
                 term = Term(
-                    text=ent.text,
-                    frequency=1,
-                    context=context,
-                    category="entity",
-                    confidence=0.9
+                    text=ent.text, frequency=1, context=context, category="entity", confidence=0.9
                 )
                 terms.append(term)
 
@@ -315,17 +293,18 @@ class TermMiner:
 
         for chunk in doc.noun_chunks:
             # Filter noun phrases by length and pattern
-            if (2 <= len(chunk.text.split()) <= 4 and
-                not chunk.text.lower().startswith(('the ', 'a ', 'an ')) and
-                any(token.pos_ in ["NOUN", "PROPN"] for token in chunk)):
-
+            if (
+                2 <= len(chunk.text.split()) <= 4
+                and not chunk.text.lower().startswith(("the ", "a ", "an "))
+                and any(token.pos_ in ["NOUN", "PROPN"] for token in chunk)
+            ):
                 context = self._extract_context(text, chunk.text, chunk.start_char)
                 term = Term(
                     text=chunk.text,
                     frequency=1,
                     context=context,
                     category="noun_phrase",
-                    confidence=0.7
+                    confidence=0.7,
                 )
                 terms.append(term)
 
@@ -336,19 +315,15 @@ class TermMiner:
         terms = []
 
         # Pattern for acronyms (2-6 uppercase letters)
-        acronym_pattern = r'\b[A-Z]{2,6}\b'
+        acronym_pattern = r"\b[A-Z]{2,6}\b"
         acronyms = re.findall(acronym_pattern, text)
 
         for acronym in acronyms:
             # Skip common words that are all caps
-            if acronym.lower() not in ['and', 'or', 'the', 'for', 'with', 'pdf', 'url']:
+            if acronym.lower() not in ["and", "or", "the", "for", "with", "pdf", "url"]:
                 context = self._extract_context(text, acronym, text.find(acronym))
                 term = Term(
-                    text=acronym,
-                    frequency=1,
-                    context=context,
-                    category="acronym",
-                    confidence=0.8
+                    text=acronym, frequency=1, context=context, category="acronym", confidence=0.8
                 )
                 terms.append(term)
 
@@ -360,10 +335,10 @@ class TermMiner:
 
         # Common technical term patterns
         patterns = [
-            r'\b[A-Z][a-z]+\s+[A-Z][a-z]+\b',  # Title Case terms like "Machine Learning"
+            r"\b[A-Z][a-z]+\s+[A-Z][a-z]+\b",  # Title Case terms like "Machine Learning"
             # Terms with acronyms like "Application Programming Interface (API)"
-            r'\b\w+\s*\([A-Z]+\)\b',
-            r'\b\w+-\w+\b',  # Hyphenated terms
+            r"\b\w+\s*\([A-Z]+\)\b",
+            r"\b\w+-\w+\b",  # Hyphenated terms
         ]
 
         for pattern in patterns:
@@ -372,18 +347,13 @@ class TermMiner:
                 if len(match.split()) <= 3:  # Limit to reasonable length
                     context = self._extract_context(text, match, text.find(match))
                     term = Term(
-                        text=match,
-                        frequency=1,
-                        context=context,
-                        category="pattern",
-                        confidence=0.6
+                        text=match, frequency=1, context=context, category="pattern", confidence=0.6
                     )
                     terms.append(term)
 
         return terms
 
-    def _extract_context(self, text: str, term: str, position: int,
-                        window: int = 50) -> str:
+    def _extract_context(self, text: str, term: str, position: int, window: int = 50) -> str:
         """Extract context around a term."""
         start = max(0, position - window)
         end = min(len(text), position + len(term) + window)
@@ -399,8 +369,10 @@ class TermMiner:
             term_counts[normalized] += 1
 
             # Keep the term object with highest confidence
-            if (normalized not in term_objects or
-                term.confidence > term_objects[normalized].confidence):
+            if (
+                normalized not in term_objects
+                or term.confidence > term_objects[normalized].confidence
+            ):
                 term_objects[normalized] = term
 
         # Update frequencies
@@ -430,19 +402,14 @@ class TermMiner:
 
         return list(merged.values())
 
-    def _filter_terms_by_frequency(self, terms: List[Term],
-                                  min_frequency: int) -> List[Term]:
+    def _filter_terms_by_frequency(self, terms: List[Term], min_frequency: int) -> List[Term]:
         """Filter terms by minimum frequency."""
         return [term for term in terms if term.frequency >= min_frequency]
 
     def _limit_terms(self, terms: List[Term], max_terms: int) -> List[Term]:
         """Limit number of terms, keeping highest frequency ones."""
         # Sort by frequency (descending) and confidence
-        sorted_terms = sorted(
-            terms,
-            key=lambda t: (t.frequency, t.confidence),
-            reverse=True
-        )
+        sorted_terms = sorted(terms, key=lambda t: (t.frequency, t.confidence), reverse=True)
         return sorted_terms[:max_terms]
 
     def _add_translations(self, terms: List[Term], source_lang: str) -> List[Term]:
@@ -455,9 +422,7 @@ class TermMiner:
         for term in terms:
             if len(term.translations) == 0:  # Only lookup if no translation exists
                 translation_data = self.wikipedia.lookup_term(
-                    term.text,
-                    source_lang=source_lang,
-                    target_lang=target_lang
+                    term.text, source_lang=source_lang, target_lang=target_lang
                 )
 
                 if translation_data:

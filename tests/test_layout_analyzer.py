@@ -164,7 +164,7 @@ class TestLayoutAnalyzer:
             (0, 200, 400, 240),
             1,
             12.0,
-            "Arial"
+            "Arial",
         )
 
         region_type = analyzer._classify_text_block(para_block, page_info)
@@ -274,18 +274,14 @@ class TestLayoutAnalyzer:
                 page_num=1,
                 width=600,
                 height=800,
-                text_blocks=[
-                    TextBlock("Page 1 content", (50, 100, 400, 120), 1, 12.0, "Arial")
-                ],
+                text_blocks=[TextBlock("Page 1 content", (50, 100, 400, 120), 1, 12.0, "Arial")],
                 raw_text="Page 1",
             ),
             PageInfo(
                 page_num=2,
                 width=600,
                 height=800,
-                text_blocks=[
-                    TextBlock("Page 2 content", (50, 100, 400, 120), 2, 12.0, "Arial")
-                ],
+                text_blocks=[TextBlock("Page 2 content", (50, 100, 400, 120), 2, 12.0, "Arial")],
                 raw_text="Page 2",
             ),
         ]
@@ -313,14 +309,14 @@ class TestLayoutAnalyzer:
                         bbox=(0, 0, 100, 20),
                         confidence=0.9,
                         page_num=1,
-                        text_blocks=[TextBlock("Title 1", (0, 0, 100, 20), 1, 18.0, "Arial")]
+                        text_blocks=[TextBlock("Title 1", (0, 0, 100, 20), 1, 18.0, "Arial")],
                     ),
                     LayoutRegion(
                         region_type=RegionType.PARAGRAPH,
                         bbox=(0, 30, 100, 50),
                         confidence=0.8,
                         page_num=1,
-                        text_blocks=[TextBlock("Para 1", (0, 30, 100, 50), 1, 12.0, "Arial")]
+                        text_blocks=[TextBlock("Para 1", (0, 30, 100, 50), 1, 12.0, "Arial")],
                     ),
                 ],
             ),
@@ -332,13 +328,13 @@ class TestLayoutAnalyzer:
         assert title_texts == {1: ["Title 1"]}
         assert para_texts == {1: ["Para 1"]}
 
-    @patch('pdf_translator.layout_analyzer.layout_analyzer.logger')
+    @patch("pdf_translator.layout_analyzer.layout_analyzer.logger")
     def test_analyze_page_layout_exception_handling(self, mock_logger):
         """Test exception handling in page layout analysis."""
         analyzer = LayoutAnalyzer()
 
         # Mock a scenario that causes an exception
-        with patch.object(analyzer, '_analyze_layout_rules', side_effect=Exception("Test error")):
+        with patch.object(analyzer, "_analyze_layout_rules", side_effect=Exception("Test error")):
             page_info = PageInfo(
                 page_num=1,
                 width=600,

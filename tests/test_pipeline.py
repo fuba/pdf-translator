@@ -25,7 +25,7 @@ class TestTranslationPipeline:
             "translation.target_language": "ja",
             "output.format": "html",
             "extraction.max_pages": 50,
-            "extraction.enable_ocr": True
+            "extraction.enable_ocr": True,
         }.get(key, default)
         return config
 
@@ -41,7 +41,7 @@ class TestTranslationPipeline:
                 width=200,
                 height=20,
                 font_size=12,
-                font_name="Arial"
+                font_name="Arial",
             ),
             TextBlock(
                 text="Machine learning is important.",
@@ -50,23 +50,15 @@ class TestTranslationPipeline:
                 width=250,
                 height=20,
                 font_size=12,
-                font_name="Arial"
-            )
+                font_name="Arial",
+            ),
         ]
 
         # Create page
-        page = Page(
-            number=1,
-            width=595,
-            height=842,
-            text_blocks=text_blocks
-        )
+        page = Page(number=1, width=595, height=842, text_blocks=text_blocks)
 
         # Create document
-        return Document(
-            pages=[page],
-            metadata={"source": "test.pdf"}
-        )
+        return Document(pages=[page], metadata={"source": "test.pdf"})
 
     def test_pipeline_initialization(self, mock_config):
         """Test pipeline initialization."""
@@ -86,7 +78,7 @@ class TestTranslationPipeline:
         config.get.side_effect = lambda key, default=None: {
             "layout.enabled": False,
             "term_extraction.enabled": False,
-            "translation.engine": "ollama"
+            "translation.engine": "ollama",
         }.get(key, default)
 
         pipeline = TranslationPipeline(config)
@@ -94,7 +86,7 @@ class TestTranslationPipeline:
         assert pipeline.layout_analyzer is None
         assert pipeline.term_miner is None
 
-    @patch('pdf_translator.core.pipeline.PDFExtractor')
+    @patch("pdf_translator.core.pipeline.PDFExtractor")
     def test_analyze_method(self, mock_extractor_class, mock_config, sample_document):
         """Test the analyze method."""
         # Setup mock extractor
@@ -103,14 +95,11 @@ class TestTranslationPipeline:
         mock_extractor_class.return_value = mock_extractor
 
         # Mock term miner
-        with patch('pdf_translator.core.pipeline.TermMiner') as mock_term_miner_class:
+        with patch("pdf_translator.core.pipeline.TermMiner") as mock_term_miner_class:
             mock_term_miner = Mock()
             # Return object with terms attribute
             mock_result = Mock()
-            mock_result.terms = {
-                "machine learning": "機械学習",
-                "document": "文書"
-            }
+            mock_result.terms = {"machine learning": "機械学習", "document": "文書"}
             mock_term_miner.extract_terms.return_value = mock_result
             mock_term_miner_class.return_value = mock_term_miner
 
@@ -127,14 +116,21 @@ class TestTranslationPipeline:
         assert "processing_time" in result
         assert "metadata" in result
 
-    @patch('pdf_translator.core.pipeline.PDFExtractor')
-    @patch('pdf_translator.core.pipeline.TermMiner')
-    @patch('pdf_translator.core.pipeline.OllamaTranslator')
-    @patch('pdf_translator.core.pipeline.PostProcessor')
-    @patch('pdf_translator.core.pipeline.DocumentRenderer')
-    def test_translate_method(self, mock_renderer_class, mock_post_processor_class,
-                             mock_translator_class, mock_term_miner_class,
-                             mock_extractor_class, mock_config, sample_document):
+    @patch("pdf_translator.core.pipeline.PDFExtractor")
+    @patch("pdf_translator.core.pipeline.TermMiner")
+    @patch("pdf_translator.core.pipeline.OllamaTranslator")
+    @patch("pdf_translator.core.pipeline.PostProcessor")
+    @patch("pdf_translator.core.pipeline.DocumentRenderer")
+    def test_translate_method(
+        self,
+        mock_renderer_class,
+        mock_post_processor_class,
+        mock_translator_class,
+        mock_term_miner_class,
+        mock_extractor_class,
+        mock_config,
+        sample_document,
+    ):
         """Test the translate method."""
         # Setup mocks
         mock_extractor = Mock()
@@ -144,22 +140,18 @@ class TestTranslationPipeline:
         mock_term_miner = Mock()
         # Return object with terms attribute
         mock_result = Mock()
-        mock_result.terms = {
-            "machine learning": "機械学習",
-            "document": "文書"
-        }
+        mock_result.terms = {"machine learning": "機械学習", "document": "文書"}
         mock_term_miner.extract_terms.return_value = mock_result
         mock_term_miner_class.return_value = mock_term_miner
 
         mock_translator = Mock()
-        mock_translator.translate.side_effect = [
-            "これはテスト文書です。",
-            "機械学習は重要です。"
-        ]
+        mock_translator.translate.side_effect = ["これはテスト文書です。", "機械学習は重要です。"]
         mock_translator_class.return_value = mock_translator
 
         mock_post_processor = Mock()
-        mock_post_processor.process.side_effect = lambda text, terms, processed: f"[処理済み] {text}"
+        mock_post_processor.process.side_effect = (
+            lambda text, terms, processed: f"[処理済み] {text}"
+        )
         mock_post_processor_class.return_value = mock_post_processor
 
         mock_renderer = Mock()
@@ -182,7 +174,7 @@ class TestTranslationPipeline:
         mock_post_processor.process.assert_called()
         mock_renderer.render.assert_called_once()
 
-    @patch('pdf_translator.core.pipeline.PDFExtractor')
+    @patch("pdf_translator.core.pipeline.PDFExtractor")
     def test_translate_with_page_filter(self, mock_extractor_class, mock_config, sample_document):
         """Test translation with specific page numbers."""
         mock_extractor = Mock()
@@ -196,11 +188,11 @@ class TestTranslationPipeline:
         mock_term_miner.extract_terms.return_value = mock_result
 
         with patch.multiple(
-            'pdf_translator.core.pipeline',
+            "pdf_translator.core.pipeline",
             TermMiner=Mock(return_value=mock_term_miner),
             OllamaTranslator=Mock(),
             PostProcessor=Mock(),
-            DocumentRenderer=Mock()
+            DocumentRenderer=Mock(),
         ):
             pipeline = TranslationPipeline(mock_config)
             pipeline.translate("test.pdf", "output.html", pages=[1, 2, 3])
@@ -215,7 +207,7 @@ class TestTranslationPipeline:
             width=595,
             height=842,
             text_blocks=[],  # No text blocks
-            images=[]
+            images=[],
         )
 
         pipeline = TranslationPipeline(mock_config)
@@ -241,15 +233,7 @@ class TestTranslationPipeline:
             width=595,
             height=842,
             text_blocks=[],
-            regions=[
-                Region(
-                    type="figure",
-                    x=90,
-                    y=90,
-                    width=220,
-                    height=40
-                )
-            ]
+            regions=[Region(type="figure", x=90, y=90, width=220, height=40)],
         )
 
         pipeline = TranslationPipeline(mock_config)
@@ -259,14 +243,11 @@ class TestTranslationPipeline:
 
     def test_extract_document_terms(self, mock_config, sample_document):
         """Test technical term extraction from document."""
-        with patch('pdf_translator.core.pipeline.TermMiner') as mock_term_miner_class:
+        with patch("pdf_translator.core.pipeline.TermMiner") as mock_term_miner_class:
             mock_term_miner = Mock()
             # Return object with terms attribute
             mock_result = Mock()
-            mock_result.terms = {
-                "machine learning": "機械学習",
-                "document": "文書"
-            }
+            mock_result.terms = {"machine learning": "機械学習", "document": "文書"}
             mock_term_miner.extract_terms.return_value = mock_result
             mock_term_miner_class.return_value = mock_term_miner
 

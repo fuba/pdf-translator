@@ -52,8 +52,8 @@ def test_rendering_pipeline():
             result = term_miner.extract_terms(page.raw_text)
             if result.success:
                 for term in result.terms:
-                    if term.translations and 'ja' in term.translations:
-                        all_terms[term.text] = term.translations['ja']
+                    if term.translations and "ja" in term.translations:
+                        all_terms[term.text] = term.translations["ja"]
         logger.info(f"   Found {len(all_terms)} terms with translations")
 
         # 4. Translate (mock for demo)
@@ -61,22 +61,18 @@ def test_rendering_pipeline():
         translated_pages = {}
         for page in pages:
             # Simple mock translation
-            translated_text = page.raw_text.replace(
-                "Technical Document", "技術文書"
-            ).replace(
-                "Introduction", "はじめに"
-            ).replace(
-                "This document", "この文書"
-            ).replace(
-                "technical", "技術的な"
+            translated_text = (
+                page.raw_text.replace("Technical Document", "技術文書")
+                .replace("Introduction", "はじめに")
+                .replace("This document", "この文書")
+                .replace("technical", "技術的な")
             )
             translated_pages[page.page_num] = translated_text
 
         # 5. Post-process
         logger.info("\n5. Post-processing translations...")
         post_config = PostProcessorConfig(
-            add_source_terms=True,
-            source_term_format="{translation}（{original}）"
+            add_source_terms=True, source_term_format="{translation}（{original}）"
         )
         post_processor = PostProcessor(post_config)
 
@@ -90,7 +86,7 @@ def test_rendering_pipeline():
         document = AnnotatedDocument(
             config=post_config,
             annotated_pages=annotated_pages,
-            title="Technical Document Translation Demo"
+            title="Technical Document Translation Demo",
         )
 
         # 7. Render to Markdown
@@ -124,6 +120,7 @@ def test_rendering_pipeline():
     except Exception as e:
         logger.error(f"Error in rendering pipeline: {e}")
         import traceback
+
         traceback.print_exc()
 
 

@@ -30,7 +30,7 @@ class ConfigManager:
         if not self.config_path.exists():
             raise FileNotFoundError(f"Configuration file not found: {self.config_path}")
 
-        with open(self.config_path, 'r', encoding='utf-8') as f:
+        with open(self.config_path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f) or {}
 
     def _apply_env_overrides(self) -> None:
@@ -74,12 +74,12 @@ class ConfigManager:
             "extraction.enable_ocr": "use_ocr",
             "layout.enabled": "layout_analysis",
             "term_extraction.enabled": "term_extraction.enabled",
-            "output.format": "output_format"
+            "output.format": "output_format",
         }
 
         # Use legacy mapping if available
         mapped_key = legacy_mappings.get(key, key)
-        keys = mapped_key.split('.')
+        keys = mapped_key.split(".")
         value = self.config
 
         for k in keys:
@@ -94,7 +94,7 @@ class ConfigManager:
 
     def set(self, key: str, value: Any) -> None:
         """Set configuration value by dot-notation key."""
-        keys = key.split('.')
+        keys = key.split(".")
         config = self.config
 
         # Navigate to the parent dictionary
@@ -115,7 +115,7 @@ class ConfigManager:
         """Save current configuration to file."""
         save_path = Path(path) if path else self.config_path
 
-        with open(save_path, 'w', encoding='utf-8') as f:
+        with open(save_path, "w", encoding="utf-8") as f:
             yaml.dump(self.config, f, default_flow_style=False, allow_unicode=True)
 
     def get_translator_config(self):

@@ -113,7 +113,7 @@ class LayoutAnalyzer:
             # a specialized model fine-tuned for layout detection
             self.processor = AutoProcessor.from_pretrained(
                 self.analyzer_config.model_name,
-                apply_ocr=False  # We already have text from PDFExtractor
+                apply_ocr=False,  # We already have text from PDFExtractor
             )
 
             # For now, we'll use a fallback approach with basic layout rules
@@ -130,9 +130,7 @@ class LayoutAnalyzer:
             self._model_loaded = True
 
     def analyze_page_layout(
-        self,
-        page_info: PageInfo,
-        pdf_path: Optional[Path] = None
+        self, page_info: PageInfo, pdf_path: Optional[Path] = None
     ) -> LayoutAnalysisResult:
         """Analyze layout of a single page.
 
@@ -166,7 +164,7 @@ class LayoutAnalyzer:
             regions=regions,
             column_count=column_count,
             has_tables=has_tables,
-            has_figures=has_figures
+            has_figures=has_figures,
         )
 
     def _analyze_layout_rules(self, page_info: PageInfo) -> List[LayoutRegion]:
@@ -193,7 +191,7 @@ class LayoutAnalyzer:
                 bbox=block.bbox,
                 confidence=0.8,  # Rule-based confidence
                 page_num=block.page_num,
-                text_blocks=[block]
+                text_blocks=[block],
             )
 
             regions.append(region)
@@ -215,14 +213,15 @@ class LayoutAnalyzer:
         text = block.text.strip()
 
         # Check for lists (starts with bullet points or numbers) - highest priority
-        if (text.startswith(('•', '●', '○', '-', '*')) or
-            (len(text) > 2 and text[0].isdigit() and text[1] in '.)')):
+        if text.startswith(("•", "●", "○", "-", "*")) or (
+            len(text) > 2 and text[0].isdigit() and text[1] in ".)"
+        ):
             return RegionType.LIST
 
         # Check for titles (larger font, shorter text) - only if we have other blocks for comparison
         if len(page_info.text_blocks) > 1:
-            avg_font_size = (
-                sum(b.font_size for b in page_info.text_blocks) / len(page_info.text_blocks)
+            avg_font_size = sum(b.font_size for b in page_info.text_blocks) / len(
+                page_info.text_blocks
             )
             if (
                 block.font_size >= avg_font_size * 1.25
@@ -266,7 +265,7 @@ class LayoutAnalyzer:
             return 1
 
         # Calculate gaps between consecutive x positions
-        gaps = [unique_x[i+1] - unique_x[i] for i in range(len(unique_x)-1)]
+        gaps = [unique_x[i + 1] - unique_x[i] for i in range(len(unique_x) - 1)]
 
         if not gaps:
             return 1
@@ -285,8 +284,8 @@ class LayoutAnalyzer:
 
         # Check gaps between significant positions
         column_gaps = [
-            significant_x_positions[i+1] - significant_x_positions[i]
-            for i in range(len(significant_x_positions)-1)
+            significant_x_positions[i + 1] - significant_x_positions[i]
+            for i in range(len(significant_x_positions) - 1)
         ]
 
         # Use a more lenient threshold for column detection
@@ -301,9 +300,7 @@ class LayoutAnalyzer:
         return len(large_gaps) + 1
 
     def analyze_document_layout(
-        self,
-        pages: List[PageInfo],
-        pdf_path: Optional[Path] = None
+        self, pages: List[PageInfo], pdf_path: Optional[Path] = None
     ) -> List[LayoutAnalysisResult]:
         """Analyze layout for multiple pages.
 
@@ -332,16 +329,14 @@ class LayoutAnalyzer:
                     regions=[],
                     column_count=1,
                     has_tables=False,
-                    has_figures=False
+                    has_figures=False,
                 )
                 results.append(fallback_result)
 
         return results
 
     def get_text_by_region_type(
-        self,
-        results: List[LayoutAnalysisResult],
-        region_type: RegionType
+        self, results: List[LayoutAnalysisResult], region_type: RegionType
     ) -> Dict[int, List[str]]:
         """Extract text by region type across all pages.
 

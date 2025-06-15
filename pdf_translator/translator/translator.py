@@ -1,10 +1,11 @@
 """Translation module using Ollama and OpenAI APIs."""
+
 import logging
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import requests
 
@@ -13,6 +14,7 @@ from pdf_translator.config.manager import ConfigManager
 # OpenAI import is optional
 try:
     import openai
+
     HAS_OPENAI = True
 except ImportError:
     HAS_OPENAI = False
@@ -24,13 +26,13 @@ logger = logging.getLogger(__name__)
 class TranslatorConfig:
     """Configuration for translator."""
 
-    engine: str
-    model: str
-    openai_model: str
-    base_url: str
-    temperature: float
-    max_tokens: int
-    timeout: int
+    engine: str = "ollama"
+    model: str = "gemma3:4b"
+    openai_model: str = "gpt-3.5-turbo"
+    base_url: str = "http://localhost:11434/api"
+    temperature: float = 0.3
+    max_tokens: int = 4096
+    timeout: int = 120
     api_key: Optional[str] = None
 
     @classmethod
@@ -42,17 +44,20 @@ class TranslatorConfig:
     def from_config_manager(cls, config: ConfigManager) -> "TranslatorConfig":
         """Create config from ConfigManager with environment variable support."""
         # Get default model from environment or config
-        default_model = os.getenv("OLLAMA_MODEL") or config.get("translator.model", "gemma3:12b-it-q8_0")
+        default_model = os.getenv("OLLAMA_MODEL") or config.get(
+            "translator.model", "gemma3:12b-it-q8_0"
+        )
 
         return cls(
             engine=config.get("translator.engine", "ollama"),
             model=default_model,
             openai_model=config.get("translator.openai_model", "gpt-3.5-turbo"),
             api_key=os.getenv("OPENAI_API_KEY") or config.get("translator.api_key", ""),
-            base_url=os.getenv("OLLAMA_API_URL") or config.get("translator.base_url", "http://localhost:11434/api"),
+            base_url=os.getenv("OLLAMA_API_URL")
+            or config.get("translator.base_url", "http://localhost:11434/api"),
             temperature=config.get("translator.temperature", 0.3),
             max_tokens=config.get("translator.max_tokens", 4096),
-            timeout=int(os.getenv("OLLAMA_TIMEOUT", config.get("translator.timeout", 120)))
+            timeout=int(os.getenv("OLLAMA_TIMEOUT", config.get("translator.timeout", 120))),
         )
 
 
@@ -71,13 +76,19 @@ class TranslationResult:
 class BaseTranslator(ABC):
     """Base class for translators."""
 
-    def __init__(self, config: Optional[ConfigManager] = None):
-        self.config = config or ConfigManager()
-        # Create translator config from ConfigManager
-        self.translator_config = TranslatorConfig.from_config_manager(self.config)
+    def __init__(self, config: Optional[Union[ConfigManager, TranslatorConfig]] = None):
+        if isinstance(config, TranslatorConfig):
+            # Direct TranslatorConfig passed
+            self.translator_config = config
+            self.config = None
+        else:
+            # ConfigManager passed (or None)
+            self.config = config or ConfigManager()
+            self.translator_config = TranslatorConfig.from_config_manager(self.config)
 
-    def get_system_prompt(self, source_lang: str, target_lang: str,
-                         preserve_format: bool = True) -> str:
+    def get_system_prompt(
+        self, source_lang: str, target_lang: str, preserve_format: bool = True
+    ) -> str:
         """Generate system prompt for translation."""
         lang_names = {
             "en": "English",
@@ -87,7 +98,7 @@ class BaseTranslator(ABC):
             "de": "German",
             "fr": "French",
             "es": "Spanish",
-            "auto": "auto-detected language"
+            "auto": "auto-detected language",
         }
 
         source_name = lang_names.get(source_lang, source_lang)
@@ -115,13 +126,15 @@ Output only the translated text without any explanations or metadata."""
         return text.strip()
 
     @abstractmethod
-    def translate(self, text: str, source_lang: str = "auto",
-                 target_lang: str = "ja") -> TranslationResult:
+    def translate(
+        self, text: str, source_lang: str = "auto", target_lang: str = "ja"
+    ) -> TranslationResult:
         """Translate text."""
         pass
 
-    def translate_batch(self, texts: List[str], source_lang: str = "auto",
-                       target_lang: str = "ja") -> List[TranslationResult]:
+    def translate_batch(
+        self, texts: List[str], source_lang: str = "auto", target_lang: str = "ja"
+    ) -> List[TranslationResult]:
         """Translate multiple texts."""
         results = []
         for text in texts:
@@ -133,11 +146,12 @@ Output only the translated text without any explanations or metadata."""
 class OllamaTranslator(BaseTranslator):
     """Translator using Ollama API."""
 
-    def __init__(self, config: Optional[ConfigManager] = None):
+    def __init__(self, config: Optional[Union[ConfigManager, TranslatorConfig]] = None):
         super().__init__(config)
 
-    def translate(self, text: str, source_lang: str = "auto",
-                 target_lang: str = "ja") -> TranslationResult:
+    def translate(
+        self, text: str, source_lang: str = "auto", target_lang: str = "ja"
+    ) -> TranslationResult:
         """Translate text using Ollama."""
         try:
             logger.info(f"Starting translation with Ollama (text length: {len(text)})")
@@ -150,13 +164,13 @@ class OllamaTranslator(BaseTranslator):
                 "model": self.translator_config.model,
                 "messages": [
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prepared_text}
+                    {"role": "user", "content": prepared_text},
                 ],
                 "stream": False,
                 "options": {
                     "temperature": self.translator_config.temperature,
-                    "num_predict": self.translator_config.max_tokens
-                }
+                    "num_predict": self.translator_config.max_tokens,
+                },
             }
 
             # Make request
@@ -164,11 +178,7 @@ class OllamaTranslator(BaseTranslator):
             logger.info(f"Sending request to {url} with model {self.translator_config.model}")
             logger.debug(f"Request payload: {payload}")
 
-            response = requests.post(
-                url,
-                json=payload,
-                timeout=self.translator_config.timeout
-            )
+            response = requests.post(url, json=payload, timeout=self.translator_config.timeout)
             logger.info(f"Received response status: {response.status_code}")
             response.raise_for_status()
 
@@ -181,10 +191,7 @@ class OllamaTranslator(BaseTranslator):
                 source_lang=source_lang,
                 target_lang=target_lang,
                 success=True,
-                metadata={
-                    "model": self.translator_config.model,
-                    "engine": "ollama"
-                }
+                metadata={"model": self.translator_config.model, "engine": "ollama"},
             )
 
         except Exception as e:
@@ -194,16 +201,13 @@ class OllamaTranslator(BaseTranslator):
                 source_lang=source_lang,
                 target_lang=target_lang,
                 success=False,
-                error=str(e)
+                error=str(e),
             )
 
     def check_connection(self) -> bool:
         """Check if Ollama server is accessible."""
         try:
-            response = requests.get(
-                f"{self.translator_config.base_url}/tags",
-                timeout=5
-            )
+            response = requests.get(f"{self.translator_config.base_url}/tags", timeout=5)
             return response.status_code == 200
         except Exception:
             return False
@@ -211,10 +215,7 @@ class OllamaTranslator(BaseTranslator):
     def list_models(self) -> List[str]:
         """List available models."""
         try:
-            response = requests.get(
-                f"{self.translator_config.base_url}/tags",
-                timeout=5
-            )
+            response = requests.get(f"{self.translator_config.base_url}/tags", timeout=5)
             response.raise_for_status()
             data = response.json()
             return [model["name"] for model in data.get("models", [])]
@@ -225,7 +226,7 @@ class OllamaTranslator(BaseTranslator):
 class OpenAITranslator(BaseTranslator):
     """Translator using OpenAI API."""
 
-    def __init__(self, config: Optional[ConfigManager] = None):
+    def __init__(self, config: Optional[Union[ConfigManager, TranslatorConfig]] = None):
         super().__init__(config)
         if not HAS_OPENAI:
             raise ImportError("OpenAI library not installed. Install with: pip install openai")
@@ -233,8 +234,9 @@ class OpenAITranslator(BaseTranslator):
             raise ValueError("OpenAI API key is required")
         openai.api_key = self.translator_config.api_key
 
-    def translate(self, text: str, source_lang: str = "auto",
-                 target_lang: str = "ja") -> TranslationResult:
+    def translate(
+        self, text: str, source_lang: str = "auto", target_lang: str = "ja"
+    ) -> TranslationResult:
         """Translate text using OpenAI."""
         try:
             # Prepare request
@@ -246,10 +248,10 @@ class OpenAITranslator(BaseTranslator):
                 model=self.translator_config.openai_model,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prepared_text}
+                    {"role": "user", "content": prepared_text},
                 ],
                 temperature=self.translator_config.temperature,
-                max_tokens=self.translator_config.max_tokens
+                max_tokens=self.translator_config.max_tokens,
             )
 
             # Extract translated text
@@ -263,8 +265,8 @@ class OpenAITranslator(BaseTranslator):
                 metadata={
                     "model": self.translator_config.openai_model,
                     "engine": "openai",
-                    "usage": response.get("usage", {})
-                }
+                    "usage": response.get("usage", {}),
+                },
             )
 
         except Exception as e:
@@ -274,7 +276,7 @@ class OpenAITranslator(BaseTranslator):
                 source_lang=source_lang,
                 target_lang=target_lang,
                 success=False,
-                error=str(e)
+                error=str(e),
             )
 
 
@@ -296,7 +298,7 @@ class TranslatorFactory:
         """Create translator from config file."""
         import yaml
 
-        with open(config_path, 'r') as f:
+        with open(config_path, "r") as f:
             full_config = yaml.safe_load(f)
 
         translator_config = full_config.get("translator", {})

@@ -81,6 +81,7 @@ class OCRExtractor:
 
         # Convert to PIL Image then to numpy array
         import io
+
         img = Image.open(io.BytesIO(img_data))
         img_array = np.array(img)
 
@@ -225,6 +226,7 @@ class OCRExtractor:
                 else:
                     # Use regular text extraction for text-based pages
                     from .pdf_extractor import PDFExtractor
+
                     extractor = PDFExtractor()
                     page_info = extractor._extract_page(page, page_num)
 

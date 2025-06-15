@@ -42,7 +42,9 @@ class PageInfo:
 class PDFExtractor:
     """Extract text and structure from PDF files using PyMuPDF."""
 
-    def __init__(self, config: Optional[ConfigManager] = None, max_pages: int = 50, use_ocr: bool = True):
+    def __init__(
+        self, config: Optional[ConfigManager] = None, max_pages: int = 50, use_ocr: bool = True
+    ):
         """Initialize PDF extractor.
 
         Args:
@@ -123,15 +125,17 @@ class PDFExtractor:
             text_blocks = []
             for block in page_info.text_blocks:
                 x0, y0, x1, y1 = block.bbox
-                text_blocks.append(ModelTextBlock(
-                    text=block.text,
-                    x=x0,
-                    y=y0,
-                    width=x1 - x0,
-                    height=y1 - y0,
-                    font_size=block.font_size,
-                    font_name=block.font_name
-                ))
+                text_blocks.append(
+                    ModelTextBlock(
+                        text=block.text,
+                        x=x0,
+                        y=y0,
+                        width=x1 - x0,
+                        height=y1 - y0,
+                        font_size=block.font_size,
+                        font_name=block.font_name,
+                    )
+                )
 
             # Create page
             page = Page(
@@ -139,17 +143,13 @@ class PDFExtractor:
                 width=page_info.width,
                 height=page_info.height,
                 text_blocks=text_blocks,
-                images=[]  # TODO: Extract images if needed
+                images=[],  # TODO: Extract images if needed
             )
             doc_pages.append(page)
 
         # Create document
         return Document(
-            pages=doc_pages,
-            metadata={
-                "source": str(pdf_path),
-                "page_count": len(doc_pages)
-            }
+            pages=doc_pages, metadata={"source": str(pdf_path), "page_count": len(doc_pages)}
         )
 
     def _extract_page(self, page: fitz.Page, page_num: int) -> PageInfo:
@@ -257,9 +257,7 @@ class PDFExtractor:
             page_num=page_num,
             font_size=first_span.get("size", 12.0),
             font_name=first_span.get("font", "Unknown"),
-            block_type=self._classify_block_type(
-                first_span.get("size", 12.0), block_text
-            ),
+            block_type=self._classify_block_type(first_span.get("size", 12.0), block_text),
         )
 
     def _get_first_span(self, block: Dict) -> Optional[Dict]:
@@ -405,6 +403,7 @@ class PDFExtractor:
         """
         if self._ocr_extractor is None:
             from .ocr_extractor import OCRExtractor
+
             self._ocr_extractor = OCRExtractor()
 
         return self._ocr_extractor.extract_page_ocr(page, page_num)

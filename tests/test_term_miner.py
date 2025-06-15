@@ -1,4 +1,5 @@
 """Tests for term_miner module."""
+
 from unittest.mock import Mock, patch
 
 from pdf_translator.term_miner import (
@@ -18,7 +19,7 @@ class TestTermMinerConfig:
             "min_frequency": 3,
             "max_terms": 50,
             "wikipedia_lookup": True,
-            "languages": ["en", "ja"]
+            "languages": ["en", "ja"],
         }
         config = TermMinerConfig.from_dict(config_dict)
 
@@ -46,7 +47,7 @@ class TestTerm:
             frequency=5,
             context="This is about machine learning algorithms",
             translations={"ja": "機械学習"},
-            confidence=0.9
+            confidence=0.9,
         )
 
         assert term.text == "machine learning"
@@ -64,18 +65,14 @@ class TestTerm:
 
 
 class TestWikipediaLookup:
-    @patch('requests.get')
+    @patch("requests.get")
     def test_lookup_success(self, mock_get):
         """Test successful Wikipedia lookup."""
         # Mock search response first, then page response
         search_response = Mock()
         search_response.status_code = 200
         search_response.json.return_value = {
-            "query": {
-                "search": [
-                    {"title": "Machine learning", "snippet": "Test snippet"}
-                ]
-            }
+            "query": {"search": [{"title": "Machine learning", "snippet": "Test snippet"}]}
         }
 
         page_response = Mock()
@@ -86,9 +83,7 @@ class TestWikipediaLookup:
                     "123": {
                         "title": "Machine learning",
                         "extract": "Machine learning is a method of data analysis...",
-                        "langlinks": [
-                            {"lang": "ja", "title": "機械学習"}
-                        ]
+                        "langlinks": [{"lang": "ja", "title": "機械学習"}],
                     }
                 }
             }
@@ -107,7 +102,7 @@ class TestWikipediaLookup:
         # Check API calls (should be called twice)
         assert mock_get.call_count == 2
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_lookup_failure(self, mock_get):
         """Test Wikipedia lookup failure."""
         mock_get.side_effect = Exception("Network error")
@@ -117,7 +112,7 @@ class TestWikipediaLookup:
 
         assert result is None
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_lookup_no_translation(self, mock_get):
         """Test Wikipedia lookup with no translation available."""
         mock_response = Mock()
@@ -128,7 +123,7 @@ class TestWikipediaLookup:
                     "123": {
                         "title": "Some Term",
                         "extract": "Some description...",
-                        "langlinks": []  # No translations
+                        "langlinks": [],  # No translations
                     }
                 }
             }
@@ -147,11 +142,11 @@ class TestTermMiner:
         self.config = TermMinerConfig(
             min_frequency=2,
             max_terms=10,
-            wikipedia_lookup=False  # Disable for unit tests
+            wikipedia_lookup=False,  # Disable for unit tests
         )
         self.miner = TermMiner(self.config)
 
-    @patch('spacy.load')
+    @patch("spacy.load")
     def test_extract_terms_basic(self, mock_spacy_load):
         """Test basic term extraction."""
         # Mock spaCy model
@@ -189,7 +184,7 @@ class TestTermMiner:
             Term("term1", 3),
             Term("term2", 1),  # Should be filtered out
             Term("term3", 2),
-            Term("term4", 5)
+            Term("term4", 5),
         ]
 
         filtered = self.miner._filter_terms_by_frequency(terms, min_frequency=2)
@@ -202,7 +197,7 @@ class TestTermMiner:
 
     def test_limit_terms(self):
         """Test limiting number of terms."""
-        terms = [Term(f"term{i}", i+1) for i in range(20)]
+        terms = [Term(f"term{i}", i + 1) for i in range(20)]
 
         limited = self.miner._limit_terms(terms, max_terms=5)
 
@@ -211,7 +206,7 @@ class TestTermMiner:
         frequencies = [t.frequency for t in limited]
         assert max(frequencies) >= min(frequencies)
 
-    @patch('spacy.load')
+    @patch("spacy.load")
     def test_extract_terms_with_context(self, mock_spacy_load):
         """Test term extraction with context."""
         mock_nlp = Mock()
@@ -237,7 +232,7 @@ class TestTermMiner:
         terms = [
             Term("machine learning", 3),
             Term("Machine Learning", 2),  # Should be merged
-            Term("neural network", 1)
+            Term("neural network", 1),
         ]
 
         merged = self.miner._merge_similar_terms(terms)
@@ -253,14 +248,11 @@ class TestTermExtractionResult:
         """Test TermExtractionResult creation."""
         terms = [
             Term("API", 3, translations={"ja": "API"}),
-            Term("database", 2, translations={"ja": "データベース"})
+            Term("database", 2, translations={"ja": "データベース"}),
         ]
 
         result = TermExtractionResult(
-            terms=terms,
-            success=True,
-            total_terms_found=10,
-            filtered_terms=8
+            terms=terms, success=True, total_terms_found=10, filtered_terms=8
         )
 
         assert len(result.terms) == 2
@@ -272,7 +264,7 @@ class TestTermExtractionResult:
         """Test getting translations as dictionary."""
         terms = [
             Term("API", 3, translations={"ja": "API"}),
-            Term("database", 2, translations={"ja": "データベース"})
+            Term("database", 2, translations={"ja": "データベース"}),
         ]
 
         result = TermExtractionResult(terms=terms, success=True)
@@ -283,11 +275,7 @@ class TestTermExtractionResult:
 
     def test_failed_result(self):
         """Test failed extraction result."""
-        result = TermExtractionResult(
-            terms=[],
-            success=False,
-            error="spaCy model not available"
-        )
+        result = TermExtractionResult(terms=[], success=False, error="spaCy model not available")
 
         assert result.success is False
         assert result.error == "spaCy model not available"

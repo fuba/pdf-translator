@@ -1,4 +1,5 @@
 """Post-processing module for translation refinement and term annotation."""
+
 import logging
 import re
 from dataclasses import dataclass, field
@@ -39,10 +40,7 @@ class TermAnnotation:
 
     def format_annotation(self, format_string: str) -> str:
         """Format the annotation using the given format string."""
-        return format_string.format(
-            translation=self.translated_term,
-            original=self.original_term
-        )
+        return format_string.format(translation=self.translated_term, original=self.original_term)
 
 
 @dataclass
@@ -65,14 +63,13 @@ class PostProcessor:
         self.processor_config = PostProcessorConfig()
         self._annotation_count: Dict[str, int] = {}
 
-    def process(self, translated_text: str,
-               term_translations: Dict[str, str]) -> PostProcessingResult:
+    def process(
+        self, translated_text: str, term_translations: Dict[str, str]
+    ) -> PostProcessingResult:
         """Process translated text with term annotations."""
         if translated_text is None:
             return PostProcessingResult(
-                processed_text="",
-                success=False,
-                error="Translated text is None"
+                processed_text="", success=False, error="Translated text is None"
             )
 
         try:
@@ -98,7 +95,7 @@ class PostProcessor:
                 processed_text=processed_text,
                 success=True,
                 annotations_added=annotations_added,
-                terms_processed=terms_processed
+                terms_processed=terms_processed,
             )
 
         except Exception as e:
@@ -106,11 +103,10 @@ class PostProcessor:
             return PostProcessingResult(
                 processed_text=translated_text,  # Return original on error
                 success=False,
-                error=str(e)
+                error=str(e),
             )
 
-    def process_with_terms(self, translated_text: str,
-                          terms: List[Term]) -> PostProcessingResult:
+    def process_with_terms(self, translated_text: str, terms: List[Term]) -> PostProcessingResult:
         """Process translated text using Term objects."""
         # Convert Term objects to translation dictionary
         term_translations = {}
@@ -122,8 +118,9 @@ class PostProcessor:
 
         return self.process(translated_text, term_translations)
 
-    def _add_source_term_annotations(self, text: str,
-                                   term_translations: Dict[str, str]) -> Tuple[str, int]:
+    def _add_source_term_annotations(
+        self, text: str, term_translations: Dict[str, str]
+    ) -> Tuple[str, int]:
         """Add source term annotations to translated text."""
         annotations_added = 0
         processed_text = text
@@ -132,7 +129,7 @@ class PostProcessor:
         sorted_terms = sorted(
             term_translations.items(),
             key=lambda x: len(x[1]),  # Sort by translation length
-            reverse=True
+            reverse=True,
         )
 
         # Keep track of already annotated positions to avoid overlaps
@@ -144,7 +141,10 @@ class PostProcessor:
                 continue
 
             # Skip if we've already annotated this term enough times
-            if self._annotation_count.get(original_term, 0) >= self.processor_config.max_annotations_per_term:
+            if (
+                self._annotation_count.get(original_term, 0)
+                >= self.processor_config.max_annotations_per_term
+            ):
                 continue
 
             # Find the translated term in the text, avoiding overlaps
@@ -169,8 +169,7 @@ class PostProcessor:
 
         # Create the annotation
         annotation = self.processor_config.source_term_format.format(
-            translation=translated_term,
-            original=original_term
+            translation=translated_term, original=original_term
         )
 
         # Find and replace first occurrence only
@@ -205,16 +204,16 @@ class PostProcessor:
 
         return text, 0, set()
 
-    def _annotate_term(self, text: str, original_term: str,
-                      translated_term: str) -> Tuple[str, int]:
+    def _annotate_term(
+        self, text: str, original_term: str, translated_term: str
+    ) -> Tuple[str, int]:
         """Annotate a specific term in the text."""
         if not translated_term or translated_term.strip() == "":
             return text, 0
 
         # Create the annotation
         annotation = self.processor_config.source_term_format.format(
-            translation=translated_term,
-            original=original_term
+            translation=translated_term, original=original_term
         )
 
         # Find and replace first occurrence only
@@ -230,8 +229,8 @@ class PostProcessor:
             # Check if we haven't annotated this term yet
             if self._annotation_count.get(original_term, 0) == 0:
                 # Replace only the first occurrence
-                before = text[:match.start()]
-                after = text[match.end():]
+                before = text[: match.start()]
+                after = text[match.end() :]
                 new_text = before + annotation + after
 
                 # Update annotation count
@@ -249,24 +248,16 @@ class PostProcessor:
         # This is a basic implementation
 
         # Pattern for Japanese characters (Hiragana, Katakana, Kanji)
-        japanese_pattern = r'[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]'
+        japanese_pattern = r"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]"
         # Pattern for ASCII characters (English, numbers, symbols)
-        ascii_pattern = r'[A-Za-z0-9]'
+        ascii_pattern = r"[A-Za-z0-9]"
 
         # Add space between Japanese and ASCII
-        text = re.sub(
-            f'({japanese_pattern})({ascii_pattern})',
-            r'\1 \2',
-            text
-        )
-        text = re.sub(
-            f'({ascii_pattern})({japanese_pattern})',
-            r'\1 \2',
-            text
-        )
+        text = re.sub(f"({japanese_pattern})({ascii_pattern})", r"\1 \2", text)
+        text = re.sub(f"({ascii_pattern})({japanese_pattern})", r"\1 \2", text)
 
         # Clean up multiple spaces
-        text = re.sub(r' +', ' ', text)
+        text = re.sub(r" +", " ", text)
 
         return text
 
@@ -276,10 +267,10 @@ class PostProcessor:
         # Most formatting should already be preserved by the processing logic
 
         # Normalize line endings
-        text = text.replace('\r\n', '\n').replace('\r', '\n')
+        text = text.replace("\r\n", "\n").replace("\r", "\n")
 
         # Preserve paragraph breaks (double newlines)
-        text = re.sub(r'\n\s*\n', '\n\n', text)
+        text = re.sub(r"\n\s*\n", "\n\n", text)
 
         return text
 
@@ -313,8 +304,9 @@ class BatchPostProcessor:
 
         return results
 
-    def process_pages(self, pages: List[str],
-                     global_terms: Dict[str, str]) -> List[PostProcessingResult]:
+    def process_pages(
+        self, pages: List[str], global_terms: Dict[str, str]
+    ) -> List[PostProcessingResult]:
         """Process multiple pages with shared global terms."""
         results = []
 
