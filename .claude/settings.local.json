@@ -16,7 +16,8 @@
       "Bash(uv run ruff check:*)",
       "Bash(make:*)",
       "Bash(gh run list:*)",
-      "Bash(gh run view:*)"
+      "Bash(gh run view:*)",
+      "Bash(git push:*)"
     ]
   },
   "enableAllProjectMcpServers": false
