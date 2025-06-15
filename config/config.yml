@@ -30,7 +30,7 @@ use_ocr: true                 # Enable OCR for image PDFs
 ocr_languages: ["en", "ja"]   # Languages for OCR
 
 # Layout analysis
-layout_analysis: false        # Enable layout detection (disabled for testing)
+layout_analysis: true         # Enable layout detection
 skip_elements:                # Elements to skip translation
   - table
   - figure
@@ -41,7 +41,7 @@ max_pages: 50                 # Maximum pages to process
 batch_size: 5                 # Pages to process in parallel
 
 # Output settings
-output_format: markdown       # markdown / html
+output_format: markdown       # markdown / html / pdf
 page_separator: hr            # hr / section
 output_dir: "./output"        # Output directory
 

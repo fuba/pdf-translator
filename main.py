@@ -77,7 +77,7 @@ Examples:
     parser.add_argument(
         "--format",
         type=str,
-        choices=["html", "markdown"],
+        choices=["html", "markdown", "pdf"],
         default=None,
         help="Output format (default: from config)",
     )
@@ -168,7 +168,12 @@ def parse_page_range(page_range: str) -> list[int]:
 
 def generate_output_path(input_path: Path, output_format: str) -> Path:
     """Generate output file path based on input and format."""
-    suffix = ".html" if output_format == "html" else ".md"
+    if output_format == "html":
+        suffix = ".html"
+    elif output_format == "pdf":
+        suffix = ".pdf"
+    else:  # markdown
+        suffix = ".md"
     output_name = input_path.stem + "_translated" + suffix
     return input_path.parent / output_name
 
@@ -184,7 +189,7 @@ def setup_configuration(args: argparse.Namespace) -> ConfigManager:
         engine = args.engine or config.get("translation.engine")
         config.set(f"translation.{engine}.model", args.model)
     if args.format:
-        config.set("output.format", args.format)
+        config.set("output_format", args.format)
     if args.source_lang:
         config.set("translation.source_language", args.source_lang)
     if args.target_lang:
@@ -275,14 +280,14 @@ def main() -> int:
         output_path = (
             Path(args.output)
             if args.output
-            else generate_output_path(input_path, config.get("output.format", "html"))
+            else generate_output_path(input_path, config.get("output_format", "markdown"))
         )
 
         # Log configuration
         logger.info(f"Processing: {input_path}")
         logger.info(f"Output: {output_path}")
         logger.info(f"Engine: {config.get('translation.engine')}")
-        logger.info(f"Format: {config.get('output.format')}")
+        logger.info(f"Format: {config.get('output_format')}")
 
         if not args.quiet:
             print(f"📄 Processing: {input_path}")

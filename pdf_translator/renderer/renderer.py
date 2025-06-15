@@ -29,11 +29,13 @@ class AnnotatedDocument:
 class RenderConfig:
     """Configuration for document rendering."""
 
-    output_format: str = "markdown"  # markdown, html
+    output_format: str = "markdown"  # markdown, html, pdf
     preserve_layout: bool = True  # Preserve original layout structure
     include_style: bool = True  # Include CSS styles for HTML
     page_breaks: bool = True  # Add page breaks between pages
     font_size_mapping: Dict[str, int] = None  # Map font sizes to heading levels
+    pdf_page_size: str = "A4"  # PDF page size (A4, Letter, etc.)
+    pdf_margin: float = 72  # PDF margins in points (72 = 1 inch)
 
     def __post_init__(self):
         """Initialize default font size mapping if not provided."""
@@ -60,7 +62,9 @@ class DocumentRenderer:
             self.config = ConfigManager()
         else:
             self.config = config or ConfigManager()
-            self.render_config = RenderConfig()
+            # Read output format from config
+            output_format = self.config.get("output_format", "markdown")
+            self.render_config = RenderConfig(output_format=output_format)
 
         # Setup Jinja2 environment for HTML templates
         self.jinja_env = jinja2.Environment(
@@ -212,16 +216,23 @@ class DocumentRenderer:
         """
         if self.render_config.output_format == "markdown":
             content = self._render_markdown(document, layout_regions)
+            # Write text output
+            from pathlib import Path
+            output_path = Path(output_path)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(content, encoding="utf-8")
         elif self.render_config.output_format == "html":
             content = self._render_html(document, layout_regions)
+            # Write text output
+            from pathlib import Path
+            output_path = Path(output_path)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text(content, encoding="utf-8")
+        elif self.render_config.output_format == "pdf":
+            # Generate PDF directly
+            self._render_pdf(document, output_path, layout_regions)
         else:
             raise ValueError(f"Unsupported output format: {self.render_config.output_format}")
-
-        # Write output
-        from pathlib import Path
-        output_path = Path(output_path)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(content, encoding="utf-8")
 
         logger.info(f"Rendered document to {output_path}")
 
@@ -448,3 +459,243 @@ class DocumentRenderer:
         document = AnnotatedDocument(config=SimpleConfig(), annotated_pages=translated_texts)
 
         self.render(document, output_path, layout_regions)
+
+    def _render_pdf(
+        self,
+        document: AnnotatedDocument,
+        output_path: Path,
+        layout_regions: Optional[Dict[int, List[LayoutRegion]]] = None,
+    ) -> None:
+        """Render document as PDF with layout preservation.
+
+        Args:
+            document: Annotated document
+            layout_regions: Optional layout regions
+            output_path: Output PDF file path
+
+        """
+        try:
+            from reportlab.lib.pagesizes import A4, letter
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.lib.units import inch
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle
+            from reportlab.lib import colors
+            from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
+            from reportlab.pdfbase import pdfmetrics
+            from reportlab.pdfbase.ttfonts import TTFont
+            import os
+        except ImportError:
+            raise ImportError("ReportLab is required for PDF output. Install with: pip install reportlab")
+
+        # Create output directory
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Setup page size
+        page_size = A4 if self.render_config.pdf_page_size == "A4" else letter
+        
+        # Create PDF document
+        doc = SimpleDocTemplate(
+            str(output_path),
+            pagesize=page_size,
+            topMargin=self.render_config.pdf_margin,
+            bottomMargin=self.render_config.pdf_margin,
+            leftMargin=self.render_config.pdf_margin,
+            rightMargin=self.render_config.pdf_margin,
+        )
+
+        # Setup styles
+        styles = getSampleStyleSheet()
+        
+        # Japanese font support - try to register common Japanese fonts
+        try:
+            self._register_japanese_fonts()
+        except Exception as e:
+            logger.warning(f"Could not register Japanese fonts: {e}")
+
+        # Create custom styles with Japanese font support
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Title'],
+            fontSize=16,
+            spaceAfter=12,
+            fontName='NotoSansCJK' if self._font_available('NotoSansCJK') else 'Helvetica-Bold'
+        )
+        
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading1'],
+            fontSize=14,
+            spaceAfter=6,
+            fontName='NotoSansCJK' if self._font_available('NotoSansCJK') else 'Helvetica-Bold'
+        )
+        
+        normal_style = ParagraphStyle(
+            'CustomNormal',
+            parent=styles['Normal'],
+            fontSize=11,
+            spaceAfter=6,
+            alignment=TA_JUSTIFY,
+            fontName='NotoSansCJK' if self._font_available('NotoSansCJK') else 'Helvetica'
+        )
+
+        # Build document content
+        story = []
+        
+        # Add title if available
+        if hasattr(document, 'title') and document.title:
+            title_para = Paragraph(document.title, title_style)
+            story.append(title_para)
+            story.append(Spacer(1, 12))
+
+        # Process each page
+        for page_num, page_text in document.annotated_pages.items():
+            # Add page header
+            if self.render_config.page_breaks and page_num > 0:
+                story.append(PageBreak())
+            
+            page_header = Paragraph(f"<b>Page {page_num + 1}</b>", heading_style)
+            story.append(page_header)
+            story.append(Spacer(1, 6))
+
+            # If we have layout regions, use them for structure
+            if layout_regions and page_num in layout_regions:
+                self._add_regions_to_pdf_story(
+                    story, layout_regions[page_num], page_text, 
+                    title_style, heading_style, normal_style
+                )
+            else:
+                # Simple paragraph-based rendering
+                paragraphs = page_text.strip().split('\n\n')
+                for para_text in paragraphs:
+                    if para_text.strip():
+                        # Clean up text for PDF
+                        clean_text = self._clean_text_for_pdf(para_text.strip())
+                        para = Paragraph(clean_text, normal_style)
+                        story.append(para)
+                        story.append(Spacer(1, 6))
+
+        # Build PDF
+        doc.build(story)
+        logger.info(f"PDF generated successfully: {output_path}")
+
+    def _register_japanese_fonts(self) -> None:
+        """Register Japanese fonts for PDF rendering."""
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+        import os
+        
+        # Common paths for Japanese fonts on different systems
+        font_paths = [
+            # macOS
+            "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
+            "/System/Library/Fonts/Hiragino Sans GB.ttc",
+            "/Library/Fonts/Arial Unicode MS.ttf",
+            # Linux (common locations)
+            "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            # Windows
+            "C:/Windows/Fonts/msgothic.ttc",
+            "C:/Windows/Fonts/msmincho.ttc",
+        ]
+        
+        for font_path in font_paths:
+            if os.path.exists(font_path):
+                try:
+                    # Register font with a simple name
+                    if font_path.endswith('.ttc'):
+                        # TrueType Collection requires subfont index
+                        pdfmetrics.registerFont(TTFont('NotoSansCJK', font_path, subfontIndex=0))
+                    else:
+                        pdfmetrics.registerFont(TTFont('NotoSansCJK', font_path))
+                    logger.info(f"Registered Japanese font: {font_path}")
+                    return
+                except Exception as e:
+                    logger.debug(f"Failed to register font {font_path}: {e}")
+                    continue
+        
+        logger.warning("No Japanese fonts found - using default fonts")
+
+    def _font_available(self, font_name: str) -> bool:
+        """Check if a font is available."""
+        from reportlab.pdfbase import pdfmetrics
+        try:
+            pdfmetrics.getFont(font_name)
+            return True
+        except:
+            return False
+
+    def _add_regions_to_pdf_story(
+        self,
+        story: List,
+        regions: List[LayoutRegion],
+        page_text: str,
+        title_style,
+        heading_style,
+        normal_style,
+    ) -> None:
+        """Add layout regions to PDF story."""
+        from reportlab.platypus import Paragraph, Spacer
+        
+        for region in regions:
+            # Extract text from text blocks
+            region_text = (
+                '\n'.join(block.text for block in region.text_blocks)
+                if region.text_blocks else ''
+            )
+            
+            if not region_text.strip():
+                continue
+                
+            # Clean text for PDF
+            clean_text = self._clean_text_for_pdf(region_text)
+            
+            if region.region_type == RegionType.TITLE:
+                para = Paragraph(f"<b>{clean_text}</b>", title_style)
+                story.append(para)
+                story.append(Spacer(1, 12))
+            elif region.region_type == RegionType.HEADER:
+                para = Paragraph(f"<b>{clean_text}</b>", heading_style)
+                story.append(para)
+                story.append(Spacer(1, 8))
+            elif region.region_type == RegionType.LIST:
+                # Format as bullet points
+                items = clean_text.split('\n')
+                for item in items:
+                    if item.strip():
+                        bullet_text = f"• {item.strip()}"
+                        para = Paragraph(bullet_text, normal_style)
+                        story.append(para)
+                story.append(Spacer(1, 6))
+            elif region.region_type == RegionType.TABLE:
+                # Preserve table formatting in monospace
+                table_text = f"<font name='Courier'>{clean_text}</font>"
+                para = Paragraph(table_text, normal_style)
+                story.append(para)
+                story.append(Spacer(1, 8))
+            elif region.region_type == RegionType.FIGURE:
+                # Mark as figure
+                figure_text = f"<i>[Figure] {clean_text}</i>"
+                para = Paragraph(figure_text, normal_style)
+                story.append(para)
+                story.append(Spacer(1, 8))
+            else:  # PARAGRAPH, TEXT, etc.
+                para = Paragraph(clean_text, normal_style)
+                story.append(para)
+                story.append(Spacer(1, 6))
+
+    def _clean_text_for_pdf(self, text: str) -> str:
+        """Clean text for PDF rendering."""
+        # Escape XML/HTML characters for ReportLab
+        text = text.replace('&', '&amp;')
+        text = text.replace('<', '&lt;')
+        text = text.replace('>', '&gt;')
+        
+        # Replace problematic characters
+        text = text.replace('\u2019', "'")  # Right single quotation mark
+        text = text.replace('\u201c', '"')  # Left double quotation mark
+        text = text.replace('\u201d', '"')  # Right double quotation mark
+        text = text.replace('\u2013', '-')  # En dash
+        text = text.replace('\u2014', '--') # Em dash
+        
+        return text

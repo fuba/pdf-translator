@@ -230,8 +230,8 @@ class TestDocumentRenderer:
 
     def test_render_unsupported_format(self, renderer, sample_document, tmp_path):
         """Test rendering with unsupported format."""
-        renderer.render_config.output_format = "pdf"
-        output_path = tmp_path / "output.pdf"
+        renderer.render_config.output_format = "xml"  # Change to truly unsupported format
+        output_path = tmp_path / "output.xml"
 
         with pytest.raises(ValueError, match="Unsupported output format"):
             renderer.render(sample_document, output_path)
