@@ -1,5 +1,13 @@
 # PDF Translator
 
+> **Note: This repository is archived.**
+>
+> A newer and improved PDF translation tool is available at: **https://github.com/fuba/translate**
+>
+> The new repository provides a more refined implementation with better performance and usability.
+
+---
+
 A PDF translation system that preserves layout while translating documents up to 50 pages using local LLMs (Gemma 3 via Ollama) or OpenAI API.
 
 ## Features
